@@ -44,21 +44,21 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.techlad.pillbuddy.R
-import com.techlad.pillbuddy.ui.theme.ReMedDark
-import com.techlad.pillbuddy.ui.theme.ReMedDarker
-import com.techlad.pillbuddy.ui.theme.ReMedLight
-import com.techlad.pillbuddy.ui.theme.ReMedLighter
-import com.techlad.pillbuddy.ui.theme.ReMedMedium
-import com.techlad.pillbuddy.ui.theme.ReMedOnPrimary
+import com.techlad.pillbuddy.ui.theme.PillBuddyDark
+import com.techlad.pillbuddy.ui.theme.PillBuddyDarker
+import com.techlad.pillbuddy.ui.theme.PillBuddyLight
+import com.techlad.pillbuddy.ui.theme.PillBuddyLighter
+import com.techlad.pillbuddy.ui.theme.PillBuddyMedium
+import com.techlad.pillbuddy.ui.theme.PillBuddyOnPrimary
 
 private val PillShape = RoundedCornerShape(50)
 
 @Composable
-fun RemedLogo(modifier: Modifier = Modifier) {
+fun PillBuddyLogo(modifier: Modifier = Modifier) {
     Box(
         modifier = modifier
             .size(112.dp)
-            .background(ReMedMedium.copy(alpha = 0.32f), CircleShape),
+            .background(PillBuddyMedium.copy(alpha = 0.32f), CircleShape),
         contentAlignment = Alignment.Center
     ) {
         Canvas(Modifier.size(width = 44.dp, height = 26.dp)) {
@@ -76,11 +76,11 @@ fun RemedLogo(modifier: Modifier = Modifier) {
             }
             clipPath(capsule) {
                 drawRect(
-                    color = ReMedDark,
+                    color = PillBuddyDark,
                     size = Size(size.width / 2f, size.height)
                 )
                 drawRect(
-                    color = ReMedLight,
+                    color = PillBuddyLight,
                     topLeft = Offset(size.width / 2f, 0f),
                     size = Size(size.width / 2f, size.height)
                 )
@@ -101,8 +101,8 @@ fun PrimaryPillButton(
         modifier = modifier.height(52.dp),
         shape = PillShape,
         colors = ButtonDefaults.buttonColors(
-            containerColor = ReMedDark,
-            contentColor = ReMedOnPrimary
+            containerColor = PillBuddyDark,
+            contentColor = PillBuddyOnPrimary
         ),
         elevation = ButtonDefaults.buttonElevation(
             defaultElevation = 0.dp,
@@ -132,10 +132,10 @@ fun SnoozeButton(
         onClick = onClick,
         modifier = modifier.height(52.dp),
         shape = PillShape,
-        border = BorderStroke(1.dp, ReMedLighter),
+        border = BorderStroke(1.dp, PillBuddyLighter),
         colors = ButtonDefaults.outlinedButtonColors(
             containerColor = ReMedCardWhite,
-            contentColor = ReMedDark
+            contentColor = PillBuddyDark
         )
     ) {
         Text(
@@ -161,14 +161,14 @@ fun DoneButton(
             Box(
                 modifier = Modifier
                     .size(22.dp)
-                    .border(1.5.dp, ReMedOnPrimary, RoundedCornerShape(6.dp)),
+                    .border(1.5.dp, PillBuddyOnPrimary, RoundedCornerShape(6.dp)),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = Icons.Filled.Check,
                     contentDescription = null,
                     modifier = Modifier.size(14.dp),
-                    tint = ReMedOnPrimary
+                    tint = PillBuddyOnPrimary
                 )
             }
         }
@@ -176,7 +176,7 @@ fun DoneButton(
 }
 
 @Composable
-fun NewRemedButton(
+fun NewReminderButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -186,8 +186,8 @@ fun NewRemedButton(
             .fillMaxWidth()
             .height(52.dp)
             .clip(shape)
-            .background(ReMedMedium.copy(alpha = 0.22f), shape)
-            .dashedBorder(color = ReMedDarker.copy(alpha = 0.55f), cornerRadius = 26.dp)
+            .background(PillBuddyMedium.copy(alpha = 0.22f), shape)
+            .dashedBorder(color = PillBuddyDarker.copy(alpha = 0.55f), cornerRadius = 26.dp)
             .clickable(role = Role.Button, onClick = onClick),
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically
@@ -195,13 +195,13 @@ fun NewRemedButton(
         Icon(
             imageVector = Icons.Filled.Add,
             contentDescription = null,
-            tint = ReMedDark,
+            tint = PillBuddyDark,
             modifier = Modifier.size(18.dp)
         )
         Text(
-            text = stringResource(R.string.new_remed),
+            text = stringResource(R.string.add_pill_reminder),
             modifier = Modifier.padding(start = 6.dp),
-            color = ReMedDark,
+            color = PillBuddyDark,
             style = MaterialTheme.typography.labelLarge,
             fontWeight = FontWeight.Medium
         )
@@ -225,18 +225,18 @@ fun DailyProgress(
                 .weight(1f)
                 .height(6.dp)
                 .clip(CircleShape)
-                .background(ReMedMedium.copy(alpha = 0.45f))
+                .background(PillBuddyMedium.copy(alpha = 0.45f))
         ) {
             Box(
                 modifier = Modifier
                     .fillMaxHeight()
                     .fillMaxWidth(fraction.coerceIn(0f, 1f))
-                    .background(ReMedDarker)
+                    .background(PillBuddyDarker)
             )
         }
         Text(
             text = stringResource(R.string.progress_label, completed, total),
-            color = ReMedDarker,
+            color = PillBuddyDarker,
             style = MaterialTheme.typography.labelMedium
         )
     }

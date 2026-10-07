@@ -16,7 +16,7 @@ import com.techlad.pillbuddy.data.model.sampleRemeds
 import com.techlad.pillbuddy.ui.screens.HomeScreen
 import com.techlad.pillbuddy.ui.screens.NewPillBuddyScreen
 import com.techlad.pillbuddy.ui.screens.OnboardingScreen
-import com.techlad.pillbuddy.ui.theme.ReMedBackground
+import com.techlad.pillbuddy.ui.theme.PillBuddyBackground
 
 private enum class AppScreen { Onboarding, Home, NewPillBuddy }
 
@@ -31,11 +31,11 @@ fun PillBuddyApp() {
     }
 
     Scaffold(
-        containerColor = ReMedBackground
+        containerColor = PillBuddyBackground
     ) { innerPadding ->
         val contentModifier = Modifier
             .padding(innerPadding)
-            .background(ReMedBackground)
+            .background(PillBuddyBackground)
         when (screen) {
             AppScreen.Onboarding -> OnboardingScreen(
                 onContinue = { screen = AppScreen.Home },

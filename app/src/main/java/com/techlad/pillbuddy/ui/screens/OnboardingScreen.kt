@@ -25,11 +25,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.techlad.pillbuddy.R
 import com.techlad.pillbuddy.ui.components.PrimaryPillButton
-import com.techlad.pillbuddy.ui.components.RemedLogo
+import com.techlad.pillbuddy.ui.components.PillBuddyLogo
 import com.techlad.pillbuddy.ui.theme.PillBuddyTheme
-import com.techlad.pillbuddy.ui.theme.ReMedCard
-import com.techlad.pillbuddy.ui.theme.ReMedDark
-import com.techlad.pillbuddy.ui.theme.ReMedDarker
+import com.techlad.pillbuddy.ui.theme.PillBuddyCard
+import com.techlad.pillbuddy.ui.theme.PillBuddyDark
+import com.techlad.pillbuddy.ui.theme.PillBuddyDarker
 
 @Composable
 fun OnboardingScreen(
@@ -51,19 +51,19 @@ fun OnboardingScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            RemedLogo()
+            PillBuddyLogo()
             Spacer(Modifier.height(28.dp))
             Text(
                 text = stringResource(R.string.brand_name),
                 style = MaterialTheme.typography.headlineLarge,
-                color = ReMedDark,
+                color = PillBuddyDark,
                 textAlign = TextAlign.Center
             )
             Spacer(Modifier.height(16.dp))
             Text(
                 text = stringResource(R.string.onboarding_subtitle),
                 style = MaterialTheme.typography.bodyLarge,
-                color = ReMedDarker,
+                color = PillBuddyDarker,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.padding(horizontal = 12.dp)
             )
@@ -72,7 +72,7 @@ fun OnboardingScreen(
                 text = stringResource(R.string.onboarding_body),
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.SemiBold,
-                color = ReMedDark,
+                color = PillBuddyDark,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.padding(horizontal = 8.dp)
             )
@@ -90,7 +90,7 @@ fun OnboardingScreen(
         ) {
             Text(
                 text = stringResource(R.string.about),
-                color = ReMedDark,
+                color = PillBuddyDark,
                 style = MaterialTheme.typography.titleMedium
             )
         }
@@ -99,24 +99,24 @@ fun OnboardingScreen(
     if (showAbout) {
         AlertDialog(
             onDismissRequest = { showAbout = false },
-            containerColor = ReMedCard,
+            containerColor = PillBuddyCard,
             title = {
                 Text(
                     text = stringResource(R.string.brand_name),
                     style = MaterialTheme.typography.titleLarge,
-                    color = ReMedDark
+                    color = PillBuddyDark
                 )
             },
             text = {
                 Text(
                     text = stringResource(R.string.about_body),
                     style = MaterialTheme.typography.bodyMedium,
-                    color = ReMedDarker
+                    color = PillBuddyDarker
                 )
             },
             confirmButton = {
                 TextButton(onClick = { showAbout = false }) {
-                    Text(stringResource(R.string.close), color = ReMedDark)
+                    Text(stringResource(R.string.close), color = PillBuddyDark)
                 }
             }
         )

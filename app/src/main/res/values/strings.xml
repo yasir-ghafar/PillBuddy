@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">PillBuddy</string>
+    <string name="app_name">Pill Buddy</string>
     <string name="brand_name">PillBuddy</string>
     <string name="onboarding_subtitle">Manage your daily medication intake easily with PillBuddy</string>
     <string name="onboarding_body">Simply add, remind, done. All your meds can be organized here.</string>
@@ -8,18 +8,18 @@
     <string name="about_body">PillBuddy helps you add medications, remember each dose, and mark them done. Everything for the day stays on one screen.</string>
     <string name="close">Close</string>
     <string name="greeting">Hi, Charles</string>
-    <string name="remed_count">You have %1$d PillBuddies today</string>
+    <string name="pill_reminder_count">You have %1$d reminders today</string>
     <string name="progress_label">%1$d of %2$d done</string>
-    <string name="current_remed">Current PillBuddy</string>
-    <string name="upcoming_remeds">Upcoming PillBuddies</string>
+    <string name="current_pill_reminder">Current reminder</string>
+    <string name="upcoming_pill_reminders">Upcoming reminders</string>
     <string name="due_now">Due now · %1$s</string>
     <string name="today_at">Today · %1$s</string>
     <string name="done">Done</string>
     <string name="snooze">Snooze</string>
     <string name="snoozed">Snoozed for later</string>
-    <string name="new_remed">New PillBuddy</string>
-    <string name="new_remed_title">New PillBuddy</string>
-    <string name="create_pillbuddy">Create PillBuddy</string>
+    <string name="add_pill_reminder">Add reminder</string>
+    <string name="new_pill_reminder">New reminder</string>
+    <string name="save_pill_reminder">Save reminder</string>
     <string name="name_label">Name</string>
     <string name="instructions_label">Instructions</string>
     <string name="default_instructions">One capsule daily, one hour before meals, with cup of water.</string>
@@ -39,10 +39,10 @@
     <string name="back">Back</string>
     <string name="ok">OK</string>
     <string name="cancel">Cancel</string>
-    <string name="all_done">All PillBuddies are done for today.</string>
-    <string name="none_yet">No PillBuddies yet. Add one below.</string>
-    <string name="share_today">Share today\'s PillBuddies</string>
-    <string name="share_summary">You have %1$d PillBuddies today. %2$d of %1$d done.</string>
+    <string name="all_pill_reminders_done">All reminders are done for today.</string>
+    <string name="no_pill_reminders">No reminders yet. Add one below.</string>
+    <string name="share_pill_reminders">Share today\'s reminders</string>
+    <string name="share_pill_reminder_summary">You have %1$d reminders today. %2$d of %1$d done.</string>
     <string name="share_chooser">Share</string>
     <string name="logo_description">PillBuddy logo</string>
 </resources>

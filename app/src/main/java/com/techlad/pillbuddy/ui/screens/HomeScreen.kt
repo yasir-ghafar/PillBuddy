@@ -43,14 +43,14 @@ import com.techlad.pillbuddy.data.model.Remed
 import com.techlad.pillbuddy.data.model.sampleRemeds
 import com.techlad.pillbuddy.ui.components.DailyProgress
 import com.techlad.pillbuddy.ui.components.DoneButton
-import com.techlad.pillbuddy.ui.components.NewRemedButton
+import com.techlad.pillbuddy.ui.components.NewReminderButton
 import com.techlad.pillbuddy.ui.components.SnoozeButton
 import com.techlad.pillbuddy.ui.theme.PillBuddyTheme
-import com.techlad.pillbuddy.ui.theme.ReMedCard
-import com.techlad.pillbuddy.ui.theme.ReMedDark
-import com.techlad.pillbuddy.ui.theme.ReMedDarker
-import com.techlad.pillbuddy.ui.theme.ReMedMedium
-import com.techlad.pillbuddy.ui.theme.ReMedOnPrimary
+import com.techlad.pillbuddy.ui.theme.PillBuddyCard
+import com.techlad.pillbuddy.ui.theme.PillBuddyDark
+import com.techlad.pillbuddy.ui.theme.PillBuddyDarker
+import com.techlad.pillbuddy.ui.theme.PillBuddyMedium
+import com.techlad.pillbuddy.ui.theme.PillBuddyOnPrimary
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -75,7 +75,7 @@ fun HomeScreen(
     val completed = meds.count { it.completed }
     val current = meds.firstOrNull { !it.completed }
     val upcoming = meds.filter { !it.completed && it.id != current?.id }
-    val shareSummary = stringResource(R.string.share_summary, total, completed)
+    val shareSummary = stringResource(R.string.share_pill_reminder_summary, total, completed)
     val shareChooser = stringResource(R.string.share_chooser)
 
     Box(modifier = modifier.fillMaxSize()) {
@@ -89,7 +89,7 @@ fun HomeScreen(
             Text(
                 text = dateLabel,
                 style = MaterialTheme.typography.labelMedium,
-                color = ReMedDarker
+                color = PillBuddyDarker
             )
             Row(
                 modifier = Modifier
@@ -101,7 +101,7 @@ fun HomeScreen(
                     text = stringResource(R.string.greeting),
                     modifier = Modifier.weight(1f),
                     style = MaterialTheme.typography.headlineMedium,
-                    color = ReMedDark
+                    color = PillBuddyDark
                 )
                 IconButton(
                     onClick = {
@@ -113,21 +113,21 @@ fun HomeScreen(
                     },
                     modifier = Modifier
                         .size(44.dp)
-                        .border(1.dp, ReMedDarker.copy(alpha = 0.35f), CircleShape)
+                        .border(1.dp, PillBuddyDarker.copy(alpha = 0.35f), CircleShape)
                 ) {
                     Icon(
                         imageVector = Icons.Outlined.Share,
-                        contentDescription = stringResource(R.string.share_today),
-                        tint = ReMedDark,
+                        contentDescription = stringResource(R.string.share_pill_reminders),
+                        tint = PillBuddyDark,
                         modifier = Modifier.size(18.dp)
                     )
                 }
             }
             Text(
-                text = stringResource(R.string.remed_count, total),
+                text = stringResource(R.string.pill_reminder_count, total),
                 modifier = Modifier.padding(top = 4.dp),
                 style = MaterialTheme.typography.bodyMedium,
-                color = ReMedDarker
+                color = PillBuddyDarker
             )
             DailyProgress(
                 completed = completed,
@@ -136,14 +136,16 @@ fun HomeScreen(
             )
 
             SectionLabel(
-                text = stringResource(R.string.current_remed),
+                text = stringResource(R.string.current_pill_reminder),
                 modifier = Modifier.padding(top = 22.dp, bottom = 10.dp)
             )
             if (current == null) {
                 Text(
-                    text = stringResource(if (total == 0) R.string.none_yet else R.string.all_done),
+                    text = stringResource(
+                        if (total == 0) R.string.no_pill_reminders else R.string.all_pill_reminders_done
+                    ),
                     style = MaterialTheme.typography.bodyMedium,
-                    color = ReMedDarker,
+                    color = PillBuddyDarker,
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
             } else {
@@ -165,7 +167,7 @@ fun HomeScreen(
 
             if (upcoming.isNotEmpty()) {
                 SectionLabel(
-                    text = stringResource(R.string.upcoming_remeds),
+                    text = stringResource(R.string.upcoming_pill_reminders),
                     modifier = Modifier.padding(top = 22.dp, bottom = 10.dp)
                 )
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -176,7 +178,7 @@ fun HomeScreen(
             }
 
             Spacer(Modifier.height(18.dp))
-            NewRemedButton(onClick = onAdd)
+            NewReminderButton(onClick = onAdd)
         }
 
         SnackbarHost(
@@ -187,8 +189,8 @@ fun HomeScreen(
         ) { data ->
             Snackbar(
                 snackbarData = data,
-                containerColor = ReMedDark,
-                contentColor = ReMedOnPrimary,
+                containerColor = PillBuddyDark,
+                contentColor = PillBuddyOnPrimary,
                 shape = RoundedCornerShape(16.dp)
             )
         }
@@ -201,7 +203,7 @@ private fun SectionLabel(text: String, modifier: Modifier = Modifier) {
         text = text,
         modifier = modifier,
         style = MaterialTheme.typography.bodyMedium,
-        color = ReMedDarker
+        color = PillBuddyDarker
     )
 }
 
@@ -215,7 +217,7 @@ private fun CurrentRemedCard(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(22.dp))
-            .background(ReMedCard)
+            .background(PillBuddyCard)
             .padding(16.dp)
     ) {
         Text(
@@ -226,9 +228,9 @@ private fun CurrentRemedCard(
             },
             modifier = Modifier
                 .clip(RoundedCornerShape(50))
-                .background(ReMedMedium.copy(alpha = 0.38f))
+                .background(PillBuddyMedium.copy(alpha = 0.38f))
                 .padding(horizontal = 10.dp, vertical = 4.dp),
-            color = ReMedDark,
+            color = PillBuddyDark,
             style = MaterialTheme.typography.labelMedium,
             fontWeight = FontWeight.Medium
         )
@@ -236,14 +238,14 @@ private fun CurrentRemedCard(
             text = remed.name,
             modifier = Modifier.padding(top = 14.dp),
             style = MaterialTheme.typography.titleLarge,
-            color = ReMedDark
+            color = PillBuddyDark
         )
         if (remed.instructions.isNotBlank()) {
             Text(
                 text = remed.instructions,
                 modifier = Modifier.padding(top = 8.dp),
                 style = MaterialTheme.typography.bodyMedium,
-                color = ReMedDarker
+                color = PillBuddyDarker
             )
         }
         DoneButton(
@@ -267,20 +269,20 @@ private fun UpcomingRemedCard(remed: Remed) {
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(20.dp))
-            .background(ReMedCard)
+            .background(PillBuddyCard)
             .padding(horizontal = 14.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Box(
             modifier = Modifier
                 .size(40.dp)
-                .background(ReMedMedium.copy(alpha = 0.35f), CircleShape),
+                .background(PillBuddyMedium.copy(alpha = 0.35f), CircleShape),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = Icons.Outlined.AccessTime,
                 contentDescription = null,
-                tint = ReMedDarker,
+                tint = PillBuddyDarker,
                 modifier = Modifier.size(20.dp)
             )
         }
@@ -289,12 +291,12 @@ private fun UpcomingRemedCard(remed: Remed) {
                 text = remed.name,
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
-                color = ReMedDark
+                color = PillBuddyDark
             )
             Text(
                 text = stringResource(R.string.today_at, remed.time),
                 style = MaterialTheme.typography.bodyMedium,
-                color = ReMedDarker
+                color = PillBuddyDarker
             )
         }
     }

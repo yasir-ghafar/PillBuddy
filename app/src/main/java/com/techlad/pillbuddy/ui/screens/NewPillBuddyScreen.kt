@@ -59,11 +59,11 @@ import com.techlad.pillbuddy.data.model.Remed
 import com.techlad.pillbuddy.ui.components.PrimaryPillButton
 import com.techlad.pillbuddy.ui.theme.DisplayFont
 import com.techlad.pillbuddy.ui.theme.PillBuddyTheme
-import com.techlad.pillbuddy.ui.theme.ReMedCard
-import com.techlad.pillbuddy.ui.theme.ReMedDark
-import com.techlad.pillbuddy.ui.theme.ReMedDarker
-import com.techlad.pillbuddy.ui.theme.ReMedLighter
-import com.techlad.pillbuddy.ui.theme.ReMedOnPrimary
+import com.techlad.pillbuddy.ui.theme.PillBuddyCard
+import com.techlad.pillbuddy.ui.theme.PillBuddyDark
+import com.techlad.pillbuddy.ui.theme.PillBuddyDarker
+import com.techlad.pillbuddy.ui.theme.PillBuddyLighter
+import com.techlad.pillbuddy.ui.theme.PillBuddyOnPrimary
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -116,12 +116,12 @@ fun NewPillBuddyScreen(
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                     contentDescription = stringResource(R.string.back),
-                    tint = ReMedDark
+                    tint = PillBuddyDark
                 )
             }
             Text(
-                text = stringResource(R.string.new_remed_title),
-                color = ReMedDark,
+                text = stringResource(R.string.new_pill_reminder),
+                color = PillBuddyDark,
                 fontFamily = DisplayFont,
                 fontWeight = FontWeight.Bold,
                 fontSize = 22.sp
@@ -135,7 +135,7 @@ fun NewPillBuddyScreen(
                 onValueChange = { name = it },
                 singleLine = true,
                 textStyle = fieldTextStyle(),
-                cursorBrush = SolidColor(ReMedDark),
+                cursorBrush = SolidColor(PillBuddyDark),
                 keyboardOptions = KeyboardOptions(
                     capitalization = KeyboardCapitalization.Words,
                     imeAction = ImeAction.Next
@@ -150,7 +150,7 @@ fun NewPillBuddyScreen(
                 value = instructions,
                 onValueChange = { instructions = it },
                 textStyle = fieldTextStyle(),
-                cursorBrush = SolidColor(ReMedDark),
+                cursorBrush = SolidColor(PillBuddyDark),
                 keyboardOptions = KeyboardOptions(
                     capitalization = KeyboardCapitalization.Sentences
                 ),
@@ -168,10 +168,10 @@ fun NewPillBuddyScreen(
                     text = stringResource(option.labelRes),
                     modifier = Modifier
                         .clip(RoundedCornerShape(50))
-                        .background(if (selected) ReMedDark else ReMedCard)
+                        .background(if (selected) PillBuddyDark else PillBuddyCard)
                         .clickable { every = option }
                         .padding(horizontal = 18.dp, vertical = 8.dp),
-                    color = if (selected) ReMedOnPrimary else ReMedDark,
+                    color = if (selected) PillBuddyOnPrimary else PillBuddyDark,
                     fontWeight = FontWeight.Medium,
                     fontSize = 15.sp
                 )
@@ -202,7 +202,7 @@ fun NewPillBuddyScreen(
         WhiteField(onClick = { picker = ActivePicker.Time }, verticalPadding = 18.dp) {
             Text(
                 text = timeLabel,
-                color = ReMedDark,
+                color = PillBuddyDark,
                 fontFamily = DisplayFont,
                 fontWeight = FontWeight.Bold,
                 fontSize = 32.sp
@@ -219,12 +219,12 @@ fun NewPillBuddyScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(FieldShape)
-                .background(ReMedCard)
+                .background(PillBuddyCard)
         ) {
             repeats.forEachIndexed { index, row ->
                 if (index > 0) {
                     HorizontalDivider(
-                        color = ReMedLighter,
+                        color = PillBuddyLighter,
                         modifier = Modifier.padding(horizontal = 16.dp)
                     )
                 }
@@ -237,12 +237,12 @@ fun NewPillBuddyScreen(
                 ) {
                     Text(
                         text = row.label,
-                        color = ReMedDark,
+                        color = PillBuddyDark,
                         fontSize = 16.sp
                     )
                     Text(
                         text = row.time,
-                        color = ReMedDarker,
+                        color = PillBuddyDarker,
                         fontWeight = FontWeight.Medium,
                         fontSize = 16.sp
                     )
@@ -251,7 +251,7 @@ fun NewPillBuddyScreen(
         }
 
         PrimaryPillButton(
-            text = stringResource(R.string.create_pillbuddy),
+            text = stringResource(R.string.save_pill_reminder),
             onClick = {
                 val trimmed = name.trim()
                 if (trimmed.isEmpty()) return@PrimaryPillButton
@@ -319,7 +319,7 @@ private fun FieldLabel(text: String, modifier: Modifier = Modifier) {
     Text(
         text = text,
         modifier = modifier.padding(start = 4.dp, bottom = 6.dp),
-        color = ReMedDarker,
+        color = PillBuddyDarker,
         fontSize = 13.sp
     )
 }
@@ -340,7 +340,7 @@ private fun WhiteField(
         modifier = modifier
             .fillMaxWidth()
             .clip(FieldShape)
-            .background(ReMedCard)
+            .background(PillBuddyCard)
             .then(clickable)
             .padding(horizontal = 16.dp, vertical = verticalPadding)
     ) {
@@ -350,7 +350,7 @@ private fun WhiteField(
 
 @Composable
 private fun fieldTextStyle() = TextStyle(
-    color = ReMedDark,
+    color = PillBuddyDark,
     fontSize = 16.sp,
     fontWeight = FontWeight.Normal
 )
@@ -380,12 +380,12 @@ private fun DateFieldDialog(
                     if (millis != null) onConfirm(FormDate.fromUtcMillis(millis)) else onDismiss()
                 }
             ) {
-                Text(stringResource(R.string.ok), color = ReMedDark)
+                Text(stringResource(R.string.ok), color = PillBuddyDark)
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text(stringResource(R.string.cancel), color = ReMedDarker)
+                Text(stringResource(R.string.cancel), color = PillBuddyDarker)
             }
         }
     ) {
@@ -402,7 +402,7 @@ private fun TimeFieldDialog(
 ) {
     val state = rememberTimePickerState(initialHour = hour, initialMinute = minute, is24Hour = false)
     Dialog(onDismissRequest = onDismiss) {
-        Surface(shape = RoundedCornerShape(28.dp), color = ReMedCard) {
+        Surface(shape = RoundedCornerShape(28.dp), color = PillBuddyCard) {
             Column(
                 modifier = Modifier.padding(top = 24.dp, bottom = 12.dp, start = 16.dp, end = 16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
@@ -413,10 +413,10 @@ private fun TimeFieldDialog(
                     horizontalArrangement = Arrangement.End
                 ) {
                     TextButton(onClick = onDismiss) {
-                        Text(stringResource(R.string.cancel), color = ReMedDarker)
+                        Text(stringResource(R.string.cancel), color = PillBuddyDarker)
                     }
                     TextButton(onClick = { onConfirm(state.hour, state.minute) }) {
-                        Text(stringResource(R.string.ok), color = ReMedDark)
+                        Text(stringResource(R.string.ok), color = PillBuddyDark)
                     }
                 }
             }
@@ -432,11 +432,11 @@ private fun NotificationDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        containerColor = ReMedCard,
+        containerColor = PillBuddyCard,
         title = {
             Text(
                 text = stringResource(R.string.notification_label),
-                color = ReMedDark,
+                color = PillBuddyDark,
                 fontFamily = DisplayFont,
                 fontWeight = FontWeight.Bold
             )
@@ -450,7 +450,7 @@ private fun NotificationDialog(
                             .fillMaxWidth()
                             .clickable { onSelect(minutes) }
                             .padding(vertical = 12.dp),
-                        color = if (minutes == selected) ReMedDark else ReMedDarker,
+                        color = if (minutes == selected) PillBuddyDark else PillBuddyDarker,
                         fontWeight = if (minutes == selected) FontWeight.SemiBold else FontWeight.Normal,
                         fontSize = 16.sp
                     )
@@ -459,7 +459,7 @@ private fun NotificationDialog(
         },
         confirmButton = {
             TextButton(onClick = onDismiss) {
-                Text(stringResource(R.string.cancel), color = ReMedDarker)
+                Text(stringResource(R.string.cancel), color = PillBuddyDarker)
             }
         }
     )

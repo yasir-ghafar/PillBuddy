@@ -1,33 +1,32 @@
 package com.techlad.pillbuddy.ui.theme
 
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
-
-private val LightColorScheme = lightColorScheme(
-    primary = PillBuddyDark,
-    onPrimary = PillBuddyOnPrimary,
-    secondary = PillBuddyDarker,
-    onSecondary = PillBuddyOnPrimary,
-    tertiary = PillBuddyMedium,
-    onTertiary = PillBuddyDark,
-    background = PillBuddyBackground,
-    onBackground = PillBuddyDark,
-    surface = PillBuddyCard,
-    onSurface = PillBuddyDark,
-    surfaceVariant = PillBuddyLighter,
-    onSurfaceVariant = PillBuddyDarker,
-    outline = PillBuddyLighter,
-    outlineVariant = PillBuddyMedium
-)
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Density
+import com.techlad.pillbuddy.data.model.TextScale
 
 @Composable
 fun PillBuddyTheme(
-    content: @Composable () -> Unit
+    textScale: TextScale = TextScale.DEFAULT,
+    highContrast: Boolean = false,
+    content: @Composable () -> Unit,
 ) {
-    MaterialTheme(
-        colorScheme = LightColorScheme,
-        typography = Typography,
-        content = content
+    val palette = if (highContrast) HighContrastPalette else LightPalette
+    val density = LocalDensity.current
+    val scaledDensity = Density(
+        density = density.density,
+        fontScale = density.fontScale * textScale.multiplier,
     )
+    CompositionLocalProvider(
+        LocalPillBuddyColors provides palette,
+        LocalDensity provides scaledDensity,
+    ) {
+        MaterialTheme(
+            colorScheme = palette.toColorScheme(),
+            typography = Typography,
+            content = content,
+        )
+    }
 }

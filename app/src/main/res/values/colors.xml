@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="remed_dark">#FF2E424D</color>
-    <color name="remed_darker">#FF5B8291</color>
-    <color name="remed_medium">#FF98DAD9</color>
-    <color name="remed_lighter">#FFEAEBED</color>
-    <color name="remed_light">#FFF5F5F5</color>
-    <color name="remed_background">#FFE4F0F0</color>
+    <color name="pill_buddy_dark">#FF2E424D</color>
+    <color name="pill_buddy_darker">#FF5B8291</color>
+    <color name="pill_buddy_medium">#FF98DAD9</color>
+    <color name="pill_buddy_lighter">#FFEAEBED</color>
+    <color name="pill_buddy_light">#FFF5F5F5</color>
+    <color name="pill_buddy_background">#FFE4F0F0</color>
     <color name="white">#FFFFFFFF</color>
     <color name="black">#FF000000</color>
 </resources>

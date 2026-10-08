@@ -2,7 +2,7 @@
 <resources>
 
     <style name="Theme.PillBuddy" parent="android:Theme.Material.Light.NoActionBar">
-        <item name="android:windowBackground">@color/remed_background</item>
+        <item name="android:windowBackground">@color/pill_buddy_background</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
         <item name="android:windowLightStatusBar">true</item>

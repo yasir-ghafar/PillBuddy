@@ -1,0 +1,40 @@
+CREATE TABLE reminder (
+  id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL,
+  instructions TEXT NOT NULL,
+  hour INTEGER NOT NULL,
+  minute INTEGER NOT NULL,
+  frequency TEXT NOT NULL,
+  startEpochDay INTEGER NOT NULL,
+  endEpochDay INTEGER,
+  notifyMinutesBefore INTEGER NOT NULL,
+  createdAtMillis INTEGER NOT NULL
+);
+
+selectAll:
+SELECT *
+FROM reminder
+ORDER BY hour, minute, id;
+
+count:
+SELECT COUNT(*)
+FROM reminder;
+
+insert:
+INSERT INTO reminder(
+  name,
+  instructions,
+  hour,
+  minute,
+  frequency,
+  startEpochDay,
+  endEpochDay,
+  notifyMinutesBefore,
+  createdAtMillis
+)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+selectById:
+SELECT *
+FROM reminder
+WHERE id = ?;

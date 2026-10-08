@@ -1,0 +1,45 @@
+CREATE TABLE doseEvent (
+  id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+  reminderId INTEGER NOT NULL,
+  epochDay INTEGER NOT NULL,
+  status TEXT NOT NULL,
+  scheduledMinutes INTEGER NOT NULL,
+  actedAtMillis INTEGER NOT NULL,
+  snoozeUntilMillis INTEGER,
+  FOREIGN KEY (reminderId) REFERENCES reminder(id) ON DELETE CASCADE
+);
+
+CREATE INDEX doseEventByReminderDay ON doseEvent(reminderId, epochDay);
+
+selectForDay:
+SELECT *
+FROM doseEvent
+WHERE epochDay = ?
+ORDER BY actedAtMillis ASC;
+
+countForReminderDayStatus:
+SELECT COUNT(*)
+FROM doseEvent
+WHERE reminderId = ? AND epochDay = ? AND status = ?;
+
+insert:
+INSERT INTO doseEvent(
+  reminderId,
+  epochDay,
+  status,
+  scheduledMinutes,
+  actedAtMillis,
+  snoozeUntilMillis
+)
+VALUES (?, ?, ?, ?, ?, ?);
+
+selectRecent:
+SELECT
+  doseEvent.id,
+  doseEvent.status,
+  doseEvent.actedAtMillis,
+  reminder.name AS reminderName
+FROM doseEvent
+INNER JOIN reminder ON reminder.id = doseEvent.reminderId
+ORDER BY doseEvent.actedAtMillis DESC
+LIMIT :limit;

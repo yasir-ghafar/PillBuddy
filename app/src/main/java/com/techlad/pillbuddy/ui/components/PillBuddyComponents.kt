@@ -61,6 +61,8 @@ fun PillBuddyLogo(modifier: Modifier = Modifier) {
             .background(PillBuddyMedium.copy(alpha = 0.32f), CircleShape),
         contentAlignment = Alignment.Center
     ) {
+        val capsuleDark = PillBuddyDark
+        val capsuleLight = PillBuddyLight
         Canvas(Modifier.size(width = 44.dp, height = 26.dp)) {
             val radius = size.height / 2f
             val capsule = Path().apply {
@@ -76,11 +78,11 @@ fun PillBuddyLogo(modifier: Modifier = Modifier) {
             }
             clipPath(capsule) {
                 drawRect(
-                    color = PillBuddyDark,
+                    color = capsuleDark,
                     size = Size(size.width / 2f, size.height)
                 )
                 drawRect(
-                    color = PillBuddyLight,
+                    color = capsuleLight,
                     topLeft = Offset(size.width / 2f, 0f),
                     size = Size(size.width / 2f, size.height)
                 )

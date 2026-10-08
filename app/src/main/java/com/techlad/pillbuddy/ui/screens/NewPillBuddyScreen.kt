@@ -14,7 +14,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
@@ -55,7 +57,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.techlad.pillbuddy.R
-import com.techlad.pillbuddy.data.model.Remed
+import com.techlad.pillbuddy.data.model.EpochDays
+import com.techlad.pillbuddy.data.model.Frequency
+import com.techlad.pillbuddy.data.model.NewReminder
 import com.techlad.pillbuddy.ui.components.PrimaryPillButton
 import com.techlad.pillbuddy.ui.theme.DisplayFont
 import com.techlad.pillbuddy.ui.theme.PillBuddyTheme
@@ -79,15 +83,15 @@ private val notificationChoices = listOf(0, 5, 15, 30, 60)
 @Composable
 fun NewPillBuddyScreen(
     onBack: () -> Unit,
-    onCreate: (Remed) -> Unit,
+    onCreate: (NewReminder) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var name by rememberSaveable { mutableStateOf("Nexium") }
     val defaultInstructions = stringResource(R.string.default_instructions)
     var instructions by rememberSaveable { mutableStateOf(defaultInstructions) }
     var every by rememberSaveable { mutableStateOf(ScheduleEvery.Day) }
-    var startDate by remember { mutableStateOf(FormDate(2021, Calendar.JANUARY, 15)) }
-    var endDate by remember { mutableStateOf(FormDate(2021, Calendar.JANUARY, 15)) }
+    var startDate by remember { mutableStateOf(FormDate.today()) }
+    var endDate by remember { mutableStateOf(FormDate.today().plusYears(1)) }
     var hour by rememberSaveable { mutableIntStateOf(6) }
     var minute by rememberSaveable { mutableIntStateOf(0) }
     var notifyMinutes by rememberSaveable { mutableIntStateOf(0) }
@@ -105,22 +109,27 @@ fun NewPillBuddyScreen(
             .padding(horizontal = 20.dp)
             .padding(bottom = 24.dp)
     ) {
+
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .offset(x = (-12).dp)
-                .padding(top = 4.dp, bottom = 8.dp),
-            verticalAlignment = Alignment.CenterVertically
+                .padding(top = 8.dp, bottom = 16.dp),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-            IconButton(onClick = onBack) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = stringResource(R.string.back),
-                    tint = PillBuddyDark
-                )
-            }
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                contentDescription = stringResource(R.string.back),
+                tint = PillBuddyDark,
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(CircleShape)
+                    .background(PillBuddyCard)
+                    .clickable(onClick = onBack)
+                    .padding(8.dp),
+            )
             Text(
                 text = stringResource(R.string.new_pill_reminder),
+                modifier = Modifier.padding(start = 12.dp),
                 color = PillBuddyDark,
                 fontFamily = DisplayFont,
                 fontWeight = FontWeight.Bold,
@@ -256,11 +265,15 @@ fun NewPillBuddyScreen(
                 val trimmed = name.trim()
                 if (trimmed.isEmpty()) return@PrimaryPillButton
                 onCreate(
-                    Remed(
-                        id = 0,
+                    NewReminder(
                         name = trimmed,
                         instructions = instructions.trim(),
-                        time = timeLabel
+                        hour = hour,
+                        minute = minute,
+                        frequency = every.toFrequency(),
+                        startEpochDay = startDate.toEpochDay(),
+                        endEpochDay = endDate.toEpochDay(),
+                        notifyMinutesBefore = notifyMinutes,
                     )
                 )
             },
@@ -472,6 +485,12 @@ private val ScheduleEvery.labelRes: Int
         ScheduleEvery.Month -> R.string.every_month
     }
 
+private fun ScheduleEvery.toFrequency(): Frequency = when (this) {
+    ScheduleEvery.Day -> Frequency.DAY
+    ScheduleEvery.Week -> Frequency.WEEK
+    ScheduleEvery.Month -> Frequency.MONTH
+}
+
 private data class FormDate(val year: Int, val month: Int, val day: Int) {
     fun toUtcMillis(): Long {
         val utc = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
@@ -487,7 +506,30 @@ private data class FormDate(val year: Int, val month: Int, val day: Int) {
         return SimpleDateFormat("d MMM yyyy", Locale.US).format(local.time)
     }
 
+    fun toEpochDay(): Long = EpochDays.of(year, month, day)
+
+    fun plusYears(years: Int): FormDate {
+        val local = Calendar.getInstance()
+        local.clear()
+        local.set(year, month, day)
+        local.add(Calendar.YEAR, years)
+        return FormDate(
+            local.get(Calendar.YEAR),
+            local.get(Calendar.MONTH),
+            local.get(Calendar.DAY_OF_MONTH),
+        )
+    }
+
     companion object {
+        fun today(): FormDate {
+            val local = Calendar.getInstance()
+            return FormDate(
+                local.get(Calendar.YEAR),
+                local.get(Calendar.MONTH),
+                local.get(Calendar.DAY_OF_MONTH),
+            )
+        }
+
         fun fromUtcMillis(millis: Long): FormDate {
             val utc = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
             utc.timeInMillis = millis

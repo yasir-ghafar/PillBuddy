@@ -6,28 +6,40 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import com.techlad.pillbuddy.data.model.sampleRemeds
-import com.techlad.pillbuddy.ui.screens.HomeScreen
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.techlad.pillbuddy.data.AppContainer
+import com.techlad.pillbuddy.data.model.AppSettings
+import com.techlad.pillbuddy.ui.screens.home.HomeScreen
+import com.techlad.pillbuddy.ui.screens.home.HomeViewModel
+import com.techlad.pillbuddy.ui.screens.home.HomeViewModelFactory
 import com.techlad.pillbuddy.ui.screens.NewPillBuddyScreen
 import com.techlad.pillbuddy.ui.screens.OnboardingScreen
+import com.techlad.pillbuddy.ui.screens.settings.SettingsFormScreen
+import com.techlad.pillbuddy.ui.screens.settings.SettingsScreen
 import com.techlad.pillbuddy.ui.theme.PillBuddyBackground
 
-private enum class AppScreen { Onboarding, Home, NewPillBuddy }
+private enum class AppScreen { Onboarding, Home, NewPillBuddy, Settings }
 
 @Composable
-fun PillBuddyApp() {
+fun PillBuddyApp(
+    container: AppContainer,
+    settings: AppSettings,
+) {
     var screen by rememberSaveable { mutableStateOf(AppScreen.Onboarding) }
-    var meds by remember { mutableStateOf(sampleRemeds()) }
-    var nextId by remember { mutableIntStateOf(4) }
+    val homeViewModel: HomeViewModel = viewModel(
+        factory = HomeViewModelFactory(
+            reminders = container.reminders,
+            doseHistory = container.doseHistory,
+            preferences = container.preferences,
+        ),
+    )
 
     BackHandler(enabled = screen != AppScreen.Onboarding) {
-        screen = if (screen == AppScreen.NewPillBuddy) AppScreen.Home else AppScreen.Onboarding
+        screen = if (screen == AppScreen.Home) AppScreen.Onboarding else AppScreen.Home
     }
 
     Scaffold(
@@ -43,17 +55,29 @@ fun PillBuddyApp() {
             )
 
             AppScreen.Home -> HomeScreen(
-                meds = meds,
-                onMedsChange = { meds = it },
                 onAdd = { screen = AppScreen.NewPillBuddy },
+                onOpenSettings = { screen = AppScreen.Settings },
+                settings = settings,
+                viewModel = homeViewModel,
+                modifier = contentModifier
+            )
+
+            /*AppScreen.Settings -> SettingsScreen(
+                preferences = container.preferences,
+                doseHistory = container.doseHistory,
+                onBack = { screen = AppScreen.Home },
+                modifier = contentModifier
+            )*/
+
+            AppScreen.Settings -> SettingsFormScreen(
+                onBack = { screen = AppScreen.Home },
                 modifier = contentModifier
             )
 
             AppScreen.NewPillBuddy -> NewPillBuddyScreen(
                 onBack = { screen = AppScreen.Home },
                 onCreate = { draft ->
-                    meds = meds + draft.copy(id = nextId)
-                    nextId += 1
+                    homeViewModel.addReminder(draft)
                     screen = AppScreen.Home
                 },
                 modifier = contentModifier

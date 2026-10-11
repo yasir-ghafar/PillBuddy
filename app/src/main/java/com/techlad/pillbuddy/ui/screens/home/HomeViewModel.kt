@@ -5,7 +5,6 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.techlad.pillbuddy.data.model.DoseStatus
 import com.techlad.pillbuddy.data.model.EpochDays
-import com.techlad.pillbuddy.data.model.NewReminder
 import com.techlad.pillbuddy.data.model.Remed
 import com.techlad.pillbuddy.data.model.ScheduledDose
 import com.techlad.pillbuddy.data.model.scheduledDoses
@@ -123,12 +122,6 @@ class HomeViewModel(
                 actedAtMillis = actedAt,
                 snoozeUntilMillis = actedAt + SNOOZE_MINUTES * 60_000L,
             )
-        }
-    }
-
-    fun addReminder(draft: NewReminder) {
-        viewModelScope.launch {
-            reminders.insert(draft)
         }
     }
 

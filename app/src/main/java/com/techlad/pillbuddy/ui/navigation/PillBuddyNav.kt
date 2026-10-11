@@ -16,7 +16,9 @@ import com.techlad.pillbuddy.data.model.AppSettings
 import com.techlad.pillbuddy.ui.screens.home.HomeScreen
 import com.techlad.pillbuddy.ui.screens.home.HomeViewModel
 import com.techlad.pillbuddy.ui.screens.home.HomeViewModelFactory
-import com.techlad.pillbuddy.ui.screens.NewPillBuddyScreen
+import com.techlad.pillbuddy.ui.screens.new_reminder.NewPillBuddyScreen
+import com.techlad.pillbuddy.ui.screens.new_reminder.NewReminderViewModel
+import com.techlad.pillbuddy.ui.screens.new_reminder.NewReminderViewModelFactory
 import com.techlad.pillbuddy.ui.screens.OnboardingScreen
 import com.techlad.pillbuddy.ui.screens.settings.SettingsFormScreen
 import com.techlad.pillbuddy.ui.screens.settings.SettingsScreen
@@ -35,6 +37,11 @@ fun PillBuddyApp(
             reminders = container.reminders,
             doseHistory = container.doseHistory,
             preferences = container.preferences,
+        ),
+    )
+    val newReminderViewModel: NewReminderViewModel = viewModel(
+        factory = NewReminderViewModelFactory(
+            reminders = container.reminders,
         ),
     )
 
@@ -77,7 +84,7 @@ fun PillBuddyApp(
             AppScreen.NewPillBuddy -> NewPillBuddyScreen(
                 onBack = { screen = AppScreen.Home },
                 onCreate = { draft ->
-                    homeViewModel.addReminder(draft)
+                    newReminderViewModel.createReminder(draft)
                     screen = AppScreen.Home
                 },
                 modifier = contentModifier

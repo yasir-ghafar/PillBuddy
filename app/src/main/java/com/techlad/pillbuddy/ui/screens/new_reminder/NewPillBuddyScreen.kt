@@ -1,6 +1,6 @@
 @file:OptIn(ExperimentalMaterial3Api::class)
 
-package com.techlad.pillbuddy.ui.screens
+package com.techlad.pillbuddy.ui.screens.new_reminder
 
 import androidx.compose.material3.ExperimentalMaterial3Api
 

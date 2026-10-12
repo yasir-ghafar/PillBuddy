@@ -7,6 +7,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -86,9 +87,8 @@ fun NewPillBuddyScreen(
     onCreate: (NewReminder) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    var name by rememberSaveable { mutableStateOf("Nexium") }
-    val defaultInstructions = stringResource(R.string.default_instructions)
-    var instructions by rememberSaveable { mutableStateOf(defaultInstructions) }
+    var name by rememberSaveable { mutableStateOf("") }
+    var instructions by rememberSaveable { mutableStateOf("") }
     var every by rememberSaveable { mutableStateOf(ScheduleEvery.Day) }
     var startDate by remember { mutableStateOf(FormDate.today()) }
     var endDate by remember { mutableStateOf(FormDate.today().plusYears(1)) }
@@ -149,7 +149,14 @@ fun NewPillBuddyScreen(
                     capitalization = KeyboardCapitalization.Words,
                     imeAction = ImeAction.Next
                 ),
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                decorationBox = { innerTextField ->
+                    PlaceholderField(
+                        showPlaceholder = name.isEmpty(),
+                        placeholder = stringResource(R.string.name_placeholder),
+                        innerTextField = innerTextField,
+                    )
+                },
             )
         }
 
@@ -165,7 +172,14 @@ fun NewPillBuddyScreen(
                 ),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .heightIn(min = 72.dp)
+                    .heightIn(min = 72.dp),
+                decorationBox = { innerTextField ->
+                    PlaceholderField(
+                        showPlaceholder = instructions.isEmpty(),
+                        placeholder = stringResource(R.string.instructions_placeholder),
+                        innerTextField = innerTextField,
+                    )
+                },
             )
         }
 
@@ -358,6 +372,23 @@ private fun WhiteField(
             .padding(horizontal = 16.dp, vertical = verticalPadding)
     ) {
         content()
+    }
+}
+
+@Composable
+private fun PlaceholderField(
+    showPlaceholder: Boolean,
+    placeholder: String,
+    innerTextField: @Composable () -> Unit,
+) {
+    Box(modifier = Modifier.fillMaxWidth()) {
+        if (showPlaceholder) {
+            Text(
+                text = placeholder,
+                style = fieldTextStyle().copy(color = PillBuddyDarker),
+            )
+        }
+        innerTextField()
     }
 }
 

@@ -64,9 +64,9 @@ class DataStorePreferencesStore(
             .first()
     }
 
-    override suspend fun setSamplesSeeded() {
+    override suspend fun clearSamplesSeeded() {
         dataStore.edit { preferences ->
-            preferences[Keys.SAMPLES_SEEDED] = true
+            preferences[Keys.SAMPLES_SEEDED] = false
         }
     }
 

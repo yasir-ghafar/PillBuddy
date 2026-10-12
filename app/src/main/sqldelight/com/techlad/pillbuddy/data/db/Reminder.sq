@@ -38,3 +38,7 @@ selectById:
 SELECT *
 FROM reminder
 WHERE id = ?;
+
+deleteSeededSamples:
+DELETE FROM reminder
+WHERE name = ? AND instructions = ? AND hour = ? AND minute = ?;

@@ -56,9 +56,9 @@ class HomeViewModel(
             }
         }
         viewModelScope.launch {
-            if (!preferences.isSamplesSeeded()) {
-                reminders.insertSamples()
-                preferences.setSamplesSeeded()
+            if (preferences.isSamplesSeeded()) {
+                reminders.deleteSeededSamples()
+                preferences.clearSamplesSeeded()
             }
             combine(
                 reminders.observeAll(),

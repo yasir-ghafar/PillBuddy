@@ -41,12 +41,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.techlad.pillbuddy.R
 import com.techlad.pillbuddy.data.model.AppSettings
 import com.techlad.pillbuddy.data.model.Remed
-import com.techlad.pillbuddy.data.model.sampleRemeds
 import com.techlad.pillbuddy.ui.feedback.performConfirmHaptic
 import com.techlad.pillbuddy.ui.feedback.rememberDoseSpeaker
 import com.techlad.pillbuddy.ui.components.DailyProgress
@@ -188,69 +188,71 @@ private fun HomeScreenContent(
                     )
                 }
             }
-            Text(
-                text = stringResource(R.string.pill_reminder_count, state.totalCount),
-                modifier = Modifier.padding(top = 4.dp),
-                style = MaterialTheme.typography.bodyMedium,
-                color = PillBuddyDarker
-            )
-            DailyProgress(
-                completed = state.completedCount,
-                total = state.totalCount,
-                modifier = Modifier.padding(top = 14.dp)
-            )
-
-            SectionLabel(
-                text = stringResource(R.string.current_pill_reminder),
-                modifier = Modifier.padding(top = 22.dp, bottom = 10.dp)
-            )
-            if (current == null) {
-                Text(
-                    text = stringResource(
-                        if (state.totalCount == 0) {
-                            R.string.no_pill_reminders
-                        } else {
-                            R.string.all_pill_reminders_done
-                        }
-                    ),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = PillBuddyDarker,
-                    modifier = Modifier.padding(bottom = 8.dp)
+            if (state.totalCount == 0) {
+                EmptyRemindersMessage(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 72.dp)
                 )
             } else {
-                CurrentRemedCard(
-                    remed = current,
-                    onDone = { onDone(current.id) },
-                    onSnooze = {
-                        onSnooze(current.id)
-                        scope.launch { snackbarHostState.showSnackbar(snoozedMessage) }
-                    }
+                Text(
+                    text = stringResource(R.string.pill_reminder_count, state.totalCount),
+                    modifier = Modifier.padding(top = 4.dp),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = PillBuddyDarker
                 )
-            }
+                DailyProgress(
+                    completed = state.completedCount,
+                    total = state.totalCount,
+                    modifier = Modifier.padding(top = 14.dp)
+                )
 
-            if (upcoming.isNotEmpty()) {
                 SectionLabel(
-                    text = stringResource(R.string.upcoming_pill_reminders),
+                    text = stringResource(R.string.current_pill_reminder),
                     modifier = Modifier.padding(top = 22.dp, bottom = 10.dp)
                 )
-                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    upcoming.forEach { remed ->
-                        UpcomingRemedCard(remed)
+                if (current == null) {
+                    Text(
+                        text = stringResource(R.string.all_pill_reminders_done),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = PillBuddyDarker,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+                } else {
+                    CurrentRemedCard(
+                        remed = current,
+                        onDone = { onDone(current.id) },
+                        onSnooze = {
+                            onSnooze(current.id)
+                            scope.launch { snackbarHostState.showSnackbar(snoozedMessage) }
+                        }
+                    )
+                }
+
+                if (upcoming.isNotEmpty()) {
+                    SectionLabel(
+                        text = stringResource(R.string.upcoming_pill_reminders),
+                        modifier = Modifier.padding(top = 22.dp, bottom = 10.dp)
+                    )
+                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        upcoming.forEach { remed ->
+                            UpcomingRemedCard(remed)
+                        }
                     }
                 }
-            }
 
-            if (missed.isNotEmpty()) {
-                SectionLabel(
-                    text = stringResource(R.string.missed_pill_reminders),
-                    modifier = Modifier.padding(top = 22.dp, bottom = 10.dp)
-                )
-                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    missed.forEach { remed ->
-                        MissedRemedCard(
-                            remed = remed,
-                            onDone = { onDone(remed.id) },
-                        )
+                if (missed.isNotEmpty()) {
+                    SectionLabel(
+                        text = stringResource(R.string.missed_pill_reminders),
+                        modifier = Modifier.padding(top = 22.dp, bottom = 10.dp)
+                    )
+                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        missed.forEach { remed ->
+                            MissedRemedCard(
+                                remed = remed,
+                                onDone = { onDone(remed.id) },
+                            )
+                        }
                     }
                 }
             }
@@ -283,6 +285,28 @@ private fun HomeScreenContent(
                 modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp)
             )
         }
+    }
+}
+
+@Composable
+private fun EmptyRemindersMessage(modifier: Modifier = Modifier) {
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            text = stringResource(R.string.no_pill_reminders_title),
+            style = MaterialTheme.typography.titleLarge,
+            color = PillBuddyDark,
+            textAlign = TextAlign.Center
+        )
+        Text(
+            text = stringResource(R.string.no_pill_reminders),
+            modifier = Modifier.padding(top = 8.dp),
+            style = MaterialTheme.typography.bodyMedium,
+            color = PillBuddyDarker,
+            textAlign = TextAlign.Center
+        )
     }
 }
 
@@ -449,7 +473,7 @@ private fun UpcomingRemedCard(remed: Remed) {
 private fun HomePreview() {
     PillBuddyTheme {
         HomeScreenContent(
-            state = sampleRemeds().toHomeUiState(System.currentTimeMillis()),
+            state = HomeUiState(),
             onAdd = {},
             onOpenSettings = {},
             onDone = {},

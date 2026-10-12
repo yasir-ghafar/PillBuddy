@@ -21,5 +21,5 @@ interface PreferencesStore {
 
     suspend fun isSamplesSeeded(): Boolean
 
-    suspend fun setSamplesSeeded()
+    suspend fun clearSamplesSeeded()
 }

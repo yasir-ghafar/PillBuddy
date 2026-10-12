@@ -2,9 +2,7 @@ package com.techlad.pillbuddy.data.repository
 
 import com.techlad.pillbuddy.data.db.PillBuddyDatabase
 import com.techlad.pillbuddy.data.db.Reminder as ReminderRow
-import com.techlad.pillbuddy.data.model.EpochDays
 import com.techlad.pillbuddy.data.model.Frequency
-import com.techlad.pillbuddy.data.model.NexiumInstructions
 import com.techlad.pillbuddy.data.model.NewReminder
 import com.techlad.pillbuddy.data.model.Reminder
 import app.cash.sqldelight.coroutines.asFlow
@@ -41,25 +39,14 @@ class ReminderRepository(
         }
     }
 
-    suspend fun insertSamples(nowMillis: Long = System.currentTimeMillis()) {
+    suspend fun deleteSeededSamples() {
         withContext(dispatcher) {
-            if (database.reminderQueries.count().executeAsOne() > 0L) return@withContext
-            val today = EpochDays.fromMillis(nowMillis)
-            database.transaction {
-                repeat(SAMPLE_COUNT) {
-                    database.reminderQueries.insert(
-                        name = "Nexium",
-                        instructions = NexiumInstructions,
-                        hour = 9,
-                        minute = 0,
-                        frequency = Frequency.DAY.name,
-                        startEpochDay = today,
-                        endEpochDay = null,
-                        notifyMinutesBefore = 0,
-                        createdAtMillis = nowMillis,
-                    )
-                }
-            }
+            database.reminderQueries.deleteSeededSamples(
+                name = "Nexium",
+                instructions = SEEDED_SAMPLE_INSTRUCTIONS,
+                hour = 9,
+                minute = 0,
+            )
         }
     }
 
@@ -78,6 +65,7 @@ class ReminderRepository(
     }
 
     private companion object {
-        const val SAMPLE_COUNT = 3
+        const val SEEDED_SAMPLE_INSTRUCTIONS =
+            "One capsule daily, one hour before meals, with one cup of water."
     }
 }

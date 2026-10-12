@@ -23,8 +23,9 @@
     <string name="new_pill_reminder">New reminder</string>
     <string name="save_pill_reminder">Save reminder</string>
     <string name="name_label">Name</string>
+    <string name="name_placeholder">Nexium</string>
     <string name="instructions_label">Instructions</string>
-    <string name="default_instructions">One capsule daily, one hour before meals, with cup of water.</string>
+    <string name="instructions_placeholder">One capsule daily, one hour before meals, with cup of water.</string>
     <string name="every_label">Every</string>
     <string name="every_day">Day</string>
     <string name="every_week">Week</string>
@@ -42,7 +43,8 @@
     <string name="ok">OK</string>
     <string name="cancel">Cancel</string>
     <string name="all_pill_reminders_done">All reminders are done for today.</string>
-    <string name="no_pill_reminders">No reminders yet. Add one below.</string>
+    <string name="no_pill_reminders_title">No reminders yet</string>
+    <string name="no_pill_reminders">Add a reminder to keep track of today\'s doses.</string>
     <string name="share_pill_reminders">Share today\'s reminders</string>
     <string name="share_pill_reminder_summary">You have %1$d reminders today. %2$d of %1$d done.</string>
     <string name="share_chooser">Share</string>

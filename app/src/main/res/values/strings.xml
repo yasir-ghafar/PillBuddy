@@ -77,7 +77,9 @@
     <string name="spoken_dose_done">%1$s marked done</string>
     <string name="spoken_dose_snoozed">%1$s snoozed</string>
     <string name="dose_history">Dose history</string>
+    <string name="view_dose_history">View dose history</string>
     <string name="no_dose_history">Taken, snoozed, and missed doses show up here.</string>
+    <string name="no_taken_dose_history">Doses you mark as taken show up here.</string>
     <string name="dose_status_taken">Taken</string>
     <string name="dose_status_snoozed">Snoozed</string>
     <string name="dose_status_missed">Missed</string>

@@ -16,6 +16,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Switch
@@ -51,6 +52,7 @@ private val CardShape = RoundedCornerShape(20.dp)
 @Composable
 fun SettingsFormScreen(
     onBack: () -> Unit,
+    onOpenDoseHistory: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var textScale by rememberSaveable { mutableStateOf(TextScale.DEFAULT) }
@@ -169,6 +171,13 @@ fun SettingsFormScreen(
             modifier = Modifier.padding(top = 8.dp),
         )
 
+        SettingsCard(modifier = Modifier.padding(top = 14.dp)) {
+            NavigationRow(
+                label = stringResource(R.string.view_dose_history),
+                onClick = onOpenDoseHistory,
+            )
+        }
+
         PrimaryPillButton(
             text = stringResource(R.string.save),
             onClick = {},
@@ -213,7 +222,7 @@ private fun ValueRow(label: String, value: String) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 16.dp),
+            .padding(horizontal = 16.dp, vertical = 12.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -229,6 +238,33 @@ private fun ValueRow(label: String, value: String) {
             color = PillBuddyDarker,
             fontWeight = FontWeight.Medium,
             fontSize = 16.sp,
+        )
+    }
+}
+
+@Composable
+private fun NavigationRow(
+    label: String,
+    onClick: () -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(horizontal = 16.dp, vertical = 14.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = label,
+            color = PillBuddyDark,
+            fontWeight = FontWeight.Medium,
+            fontSize = 16.sp,
+        )
+        Icon(
+            imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+            contentDescription = null,
+            tint = PillBuddyDarker,
         )
     }
 }
@@ -330,6 +366,7 @@ private fun SettingsFormPreview() {
     PillBuddyTheme {
         SettingsFormScreen(
             onBack = {},
+            onOpenDoseHistory = {},
             modifier = Modifier.background(PillBuddyBackground),
         )
     }

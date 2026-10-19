@@ -29,11 +29,26 @@ class DoseHistoryRepository(
             .mapToList(dispatcher)
             .map { rows ->
                 rows.mapNotNull { row ->
-                    val status = row.status.toDoseStatus() ?: return@mapNotNull null
-                    DoseHistoryItem(
+                    toHistoryItem(
                         id = row.id,
                         reminderName = row.reminderName,
-                        status = status,
+                        status = row.status,
+                        actedAtMillis = row.actedAtMillis,
+                    )
+                }
+            }
+    }
+
+    fun observeRecentTaken(limit: Long = RECENT_LIMIT): Flow<List<DoseHistoryItem>> {
+        return database.doseEventQueries.selectRecentTaken(limit)
+            .asFlow()
+            .mapToList(dispatcher)
+            .map { rows ->
+                rows.mapNotNull { row ->
+                    toHistoryItem(
+                        id = row.id,
+                        reminderName = row.reminderName,
+                        status = row.status,
                         actedAtMillis = row.actedAtMillis,
                     )
                 }
@@ -97,6 +112,21 @@ class DoseHistoryRepository(
             scheduledMinutes = scheduledMinutes.toInt(),
             actedAtMillis = actedAtMillis,
             snoozeUntilMillis = snoozeUntilMillis,
+        )
+    }
+
+    private fun toHistoryItem(
+        id: Long,
+        reminderName: String,
+        status: String,
+        actedAtMillis: Long,
+    ): DoseHistoryItem? {
+        val parsed = status.toDoseStatus() ?: return null
+        return DoseHistoryItem(
+            id = id,
+            reminderName = reminderName,
+            status = parsed,
+            actedAtMillis = actedAtMillis,
         )
     }
 

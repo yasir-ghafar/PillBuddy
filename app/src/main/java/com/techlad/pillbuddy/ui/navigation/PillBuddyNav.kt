@@ -20,11 +20,11 @@ import com.techlad.pillbuddy.ui.screens.new_reminder.NewPillBuddyScreen
 import com.techlad.pillbuddy.ui.screens.new_reminder.NewReminderViewModel
 import com.techlad.pillbuddy.ui.screens.new_reminder.NewReminderViewModelFactory
 import com.techlad.pillbuddy.ui.screens.OnboardingScreen
+import com.techlad.pillbuddy.ui.screens.settings.DoseHistoryScreen
 import com.techlad.pillbuddy.ui.screens.settings.SettingsFormScreen
-import com.techlad.pillbuddy.ui.screens.settings.SettingsScreen
 import com.techlad.pillbuddy.ui.theme.PillBuddyBackground
 
-private enum class AppScreen { Onboarding, Home, NewPillBuddy, Settings }
+private enum class AppScreen { Onboarding, Home, NewPillBuddy, Settings, DoseHistory }
 
 @Composable
 fun PillBuddyApp(
@@ -46,7 +46,11 @@ fun PillBuddyApp(
     )
 
     BackHandler(enabled = screen != AppScreen.Onboarding) {
-        screen = if (screen == AppScreen.Home) AppScreen.Onboarding else AppScreen.Home
+        screen = when (screen) {
+            AppScreen.Home -> AppScreen.Onboarding
+            AppScreen.DoseHistory -> AppScreen.Settings
+            else -> AppScreen.Home
+        }
     }
 
     Scaffold(
@@ -69,16 +73,16 @@ fun PillBuddyApp(
                 modifier = contentModifier
             )
 
-            /*AppScreen.Settings -> SettingsScreen(
-                preferences = container.preferences,
-                doseHistory = container.doseHistory,
-                onBack = { screen = AppScreen.Home },
-                modifier = contentModifier
-            )*/
-
             AppScreen.Settings -> SettingsFormScreen(
                 onBack = { screen = AppScreen.Home },
-                modifier = contentModifier
+                onOpenDoseHistory = { screen = AppScreen.DoseHistory },
+                modifier = contentModifier,
+            )
+
+            AppScreen.DoseHistory -> DoseHistoryScreen(
+                doseHistory = container.doseHistory,
+                onBack = { screen = AppScreen.Settings },
+                modifier = contentModifier,
             )
 
             AppScreen.NewPillBuddy -> NewPillBuddyScreen(

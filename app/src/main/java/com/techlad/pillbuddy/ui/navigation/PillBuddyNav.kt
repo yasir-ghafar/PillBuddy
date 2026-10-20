@@ -74,6 +74,7 @@ fun PillBuddyApp(
             )
 
             AppScreen.Settings -> SettingsFormScreen(
+                preferences = container.preferences,
                 onBack = { screen = AppScreen.Home },
                 onOpenDoseHistory = { screen = AppScreen.DoseHistory },
                 modifier = contentModifier,

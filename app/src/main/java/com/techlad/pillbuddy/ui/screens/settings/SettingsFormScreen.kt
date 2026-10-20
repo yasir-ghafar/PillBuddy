@@ -23,8 +23,10 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -36,7 +38,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.techlad.pillbuddy.R
+import com.techlad.pillbuddy.data.model.AppSettings
 import com.techlad.pillbuddy.data.model.TextScale
+import com.techlad.pillbuddy.data.settings.PreferencesStore
 import com.techlad.pillbuddy.ui.components.PrimaryPillButton
 import com.techlad.pillbuddy.ui.theme.DisplayFont
 import com.techlad.pillbuddy.ui.theme.PillBuddyBackground
@@ -46,26 +50,50 @@ import com.techlad.pillbuddy.ui.theme.PillBuddyDarker
 import com.techlad.pillbuddy.ui.theme.PillBuddyLighter
 import com.techlad.pillbuddy.ui.theme.PillBuddyOnPrimary
 import com.techlad.pillbuddy.ui.theme.PillBuddyTheme
+import kotlinx.coroutines.launch
 
 private val CardShape = RoundedCornerShape(20.dp)
 
 @Composable
 fun SettingsFormScreen(
+    preferences: PreferencesStore,
     onBack: () -> Unit,
     onOpenDoseHistory: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    var textScale by rememberSaveable { mutableStateOf(TextScale.DEFAULT) }
-    var haptics by rememberSaveable { mutableStateOf(true) }
-    var darkMode by rememberSaveable { mutableStateOf(false) }
+    val settings by preferences.settings.collectAsState(initial = AppSettings())
+    val scope = rememberCoroutineScope()
 
+    SettingsContent(
+        settings = settings,
+        onBack = onBack,
+        onOpenDoseHistory = onOpenDoseHistory,
+        onDark =  { },
+        onTextScale = { scale -> scope.launch { preferences.setTextScale(scale) } },
+        onHaptics = {enabled -> scope.launch { preferences.setHaptics(enabled) } },
+        modifier = modifier
+    )
+
+}
+
+
+@Composable
+private fun SettingsContent(
+    settings: AppSettings,
+    onBack: () -> Unit,
+    onOpenDoseHistory: () -> Unit,
+    onDark: (Boolean) -> Unit,
+    onTextScale: (TextScale) -> Unit,
+    onHaptics: (Boolean) -> Unit,
+    modifier: Modifier = Modifier
+) {
     Column(
         modifier = modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 20.dp)
-            .padding(bottom = 24.dp),
-    ) {
+            .padding(bottom = 24.dp),)
+    {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -117,12 +145,12 @@ fun SettingsFormScreen(
         }
 
         SettingsCard(modifier = Modifier.padding(top = 14.dp)) {
-            SwitchRow(
+            /*SwitchRow(
                 title = stringResource(R.string.dark_mode),
-                body = stringResource(if (darkMode) R.string.switch_on else R.string.switch_off),
+                body = stringResource(if (settings) R.string.switch_on else R.string.switch_off),
                 checked = darkMode,
                 onCheckedChange = { darkMode = it },
-            )
+            )*/
         }
 
         SettingsCard(modifier = Modifier.padding(top = 14.dp)) {
@@ -148,13 +176,13 @@ fun SettingsFormScreen(
         )
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             TextScale.entries.forEach { scale ->
-                val selected = scale == textScale
+                val selected = scale == settings.textScale
                 Text(
                     text = stringResource(scale.labelRes),
                     modifier = Modifier
                         .clip(RoundedCornerShape(50))
                         .background(if (selected) PillBuddyDark else PillBuddyCard)
-                        .clickable { textScale = scale }
+                        .clickable { onTextScale(scale) }
                         .padding(horizontal = 16.dp, vertical = 8.dp),
                     color = if (selected) PillBuddyOnPrimary else PillBuddyDark,
                     fontWeight = FontWeight.Medium,
@@ -166,8 +194,8 @@ fun SettingsFormScreen(
         SettingSwitch(
             title = stringResource(R.string.haptics),
             body = stringResource(R.string.haptics_description),
-            checked = haptics,
-            onCheckedChange = { haptics = it },
+            checked = settings.haptics,
+            onCheckedChange = onHaptics,
             modifier = Modifier.padding(top = 8.dp),
         )
 
@@ -187,7 +215,6 @@ fun SettingsFormScreen(
         )
     }
 }
-
 @Composable
 private fun SectionLabel(text: String, modifier: Modifier = Modifier) {
     Text(
@@ -360,7 +387,7 @@ private val TextScale.labelRes: Int
         TextScale.EXTRA_LARGE -> R.string.text_scale_extra_large
     }
 
-@Preview(showBackground = true, widthDp = 390, heightDp = 900)
+/*@Preview(showBackground = true, widthDp = 390, heightDp = 900)
 @Composable
 private fun SettingsFormPreview() {
     PillBuddyTheme {
@@ -370,4 +397,4 @@ private fun SettingsFormPreview() {
             modifier = Modifier.background(PillBuddyBackground),
         )
     }
-}
+}*/

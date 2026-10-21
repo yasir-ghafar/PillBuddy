@@ -84,4 +84,15 @@
     <string name="dose_status_snoozed">Snoozed</string>
     <string name="dose_status_missed">Missed</string>
     <string name="dose_history_time">MMM d, h:mm a</string>
+    <string name="notification_channel_name">Dose reminders</string>
+    <string name="notification_channel_description">Alerts when a medication dose is due.</string>
+    <string name="notification_due_at">Due at %1$s</string>
+    <string name="notification_due_now">Due now</string>
+    <string name="exact_alarm_title">Allow exact reminders</string>
+    <string name="exact_alarm_body">PillBuddy uses exact alarms so each dose reminder fires at the time you set.</string>
+    <string name="exact_alarm_allow">Allow</string>
+    <string name="exact_alarm_not_now">Not now</string>
+    <string name="notifications_off_title">Turn on notifications</string>
+    <string name="notifications_off_body">PillBuddy needs notifications to remind you when a dose is due.</string>
+    <string name="notifications_off_open">Open settings</string>
 </resources>

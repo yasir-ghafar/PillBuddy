@@ -22,6 +22,17 @@ SELECT COUNT(*)
 FROM doseEvent
 WHERE reminderId = ? AND epochDay = ? AND status = ?;
 
+countPendingSnooze:
+SELECT COUNT(*)
+FROM doseEvent
+WHERE reminderId = ? AND epochDay = ? AND status = 'SNOOZED' AND snoozeUntilMillis > ?;
+
+selectActiveSnoozes:
+SELECT *
+FROM doseEvent
+WHERE status = 'SNOOZED' AND snoozeUntilMillis > :nowMillis
+ORDER BY actedAtMillis DESC;
+
 insert:
 INSERT INTO doseEvent(
   reminderId,

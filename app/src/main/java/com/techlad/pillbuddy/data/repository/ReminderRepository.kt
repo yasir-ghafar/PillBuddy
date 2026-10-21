@@ -23,30 +23,52 @@ class ReminderRepository(
             .map { rows -> rows.map { it.toDomain() } }
     }
 
-    suspend fun insert(draft: NewReminder) {
-        withContext(dispatcher) {
-            database.reminderQueries.insert(
-                name = draft.name,
-                instructions = draft.instructions,
-                hour = draft.hour.toLong(),
-                minute = draft.minute.toLong(),
-                frequency = draft.frequency.name,
-                startEpochDay = draft.startEpochDay,
-                endEpochDay = draft.endEpochDay,
-                notifyMinutesBefore = draft.notifyMinutesBefore.toLong(),
-                createdAtMillis = System.currentTimeMillis(),
-            )
+    suspend fun insert(draft: NewReminder): Long {
+        return withContext(dispatcher) {
+            database.transactionWithResult {
+                database.reminderQueries.insert(
+                    name = draft.name,
+                    instructions = draft.instructions,
+                    hour = draft.hour.toLong(),
+                    minute = draft.minute.toLong(),
+                    frequency = draft.frequency.name,
+                    startEpochDay = draft.startEpochDay,
+                    endEpochDay = draft.endEpochDay,
+                    notifyMinutesBefore = draft.notifyMinutesBefore.toLong(),
+                    createdAtMillis = System.currentTimeMillis(),
+                )
+                database.reminderQueries.lastInsertedId().executeAsOne()
+            }
         }
     }
 
-    suspend fun deleteSeededSamples() {
-        withContext(dispatcher) {
+    suspend fun getById(id: Long): Reminder? {
+        return withContext(dispatcher) {
+            database.reminderQueries.selectById(id).executeAsOneOrNull()?.toDomain()
+        }
+    }
+
+    suspend fun listAll(): List<Reminder> {
+        return withContext(dispatcher) {
+            database.reminderQueries.selectAll().executeAsList().map { it.toDomain() }
+        }
+    }
+
+    suspend fun deleteSeededSamples(): List<Long> {
+        return withContext(dispatcher) {
+            val ids = database.reminderQueries.selectSeededSampleIds(
+                name = "Nexium",
+                instructions = SEEDED_SAMPLE_INSTRUCTIONS,
+                hour = 9,
+                minute = 0,
+            ).executeAsList()
             database.reminderQueries.deleteSeededSamples(
                 name = "Nexium",
                 instructions = SEEDED_SAMPLE_INSTRUCTIONS,
                 hour = 9,
                 minute = 0,
             )
+            ids
         }
     }
 

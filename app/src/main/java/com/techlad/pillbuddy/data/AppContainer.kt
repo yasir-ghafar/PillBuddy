@@ -6,6 +6,7 @@ import com.techlad.pillbuddy.data.repository.DoseHistoryRepository
 import com.techlad.pillbuddy.data.repository.ReminderRepository
 import com.techlad.pillbuddy.data.settings.DataStorePreferencesStore
 import com.techlad.pillbuddy.data.settings.PreferencesStore
+import com.techlad.pillbuddy.notification.DoseAlarmScheduler
 import kotlinx.coroutines.Dispatchers
 
 /**
@@ -20,4 +21,9 @@ class AppContainer(context: Context) {
     val reminders = ReminderRepository(database, io)
     val doseHistory = DoseHistoryRepository(database, io)
     val preferences: PreferencesStore = DataStorePreferencesStore(context)
+    val doseAlarms = DoseAlarmScheduler(
+        context = context.applicationContext,
+        reminders = reminders,
+        doseHistory = doseHistory,
+    )
 }

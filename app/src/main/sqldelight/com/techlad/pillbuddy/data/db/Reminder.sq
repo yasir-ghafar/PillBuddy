@@ -39,6 +39,14 @@ SELECT *
 FROM reminder
 WHERE id = ?;
 
+lastInsertedId:
+SELECT last_insert_rowid();
+
+selectSeededSampleIds:
+SELECT id
+FROM reminder
+WHERE name = ? AND instructions = ? AND hour = ? AND minute = ?;
+
 deleteSeededSamples:
 DELETE FROM reminder
 WHERE name = ? AND instructions = ? AND hour = ? AND minute = ?;

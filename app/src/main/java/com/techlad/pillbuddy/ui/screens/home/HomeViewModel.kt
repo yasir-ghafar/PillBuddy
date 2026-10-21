@@ -8,10 +8,12 @@ import com.techlad.pillbuddy.data.model.EpochDays
 import com.techlad.pillbuddy.data.model.Remed
 import com.techlad.pillbuddy.data.model.ScheduledDose
 import com.techlad.pillbuddy.data.model.scheduledDoses
+import com.techlad.pillbuddy.data.model.snoozeUntil
 import com.techlad.pillbuddy.data.repository.DoseHistoryRepository
 import com.techlad.pillbuddy.data.repository.MissedDose
 import com.techlad.pillbuddy.data.repository.ReminderRepository
 import com.techlad.pillbuddy.data.settings.PreferencesStore
+import com.techlad.pillbuddy.notification.DoseAlarmScheduler
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -41,6 +43,7 @@ class HomeViewModel(
     private val reminders: ReminderRepository,
     private val doseHistory: DoseHistoryRepository,
     private val preferences: PreferencesStore,
+    private val doseAlarms: DoseAlarmScheduler,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(HomeUiState())
     private val now = MutableStateFlow(System.currentTimeMillis())
@@ -57,9 +60,10 @@ class HomeViewModel(
         }
         viewModelScope.launch {
             if (preferences.isSamplesSeeded()) {
-                reminders.deleteSeededSamples()
+                reminders.deleteSeededSamples().forEach { doseAlarms.cancel(it) }
                 preferences.clearSamplesSeeded()
             }
+            doseAlarms.rescheduleAll()
             combine(
                 reminders.observeAll(),
                 now.map { EpochDays.fromMillis(it) }.distinctUntilChanged().flatMapLatest { day ->
@@ -107,6 +111,7 @@ class HomeViewModel(
                 actedAtMillis = System.currentTimeMillis(),
                 snoozeUntilMillis = null,
             )
+            doseAlarms.onTaken(id)
         }
     }
 
@@ -114,20 +119,26 @@ class HomeViewModel(
         val dose = currentDoses[id] ?: return
         val actedAt = System.currentTimeMillis()
         viewModelScope.launch {
+            val until = snoozeUntil(actedAt)
             doseHistory.record(
                 reminderId = id,
                 epochDay = dose.epochDay,
                 status = DoseStatus.SNOOZED,
                 scheduledMinutes = dose.scheduledMinutes,
                 actedAtMillis = actedAt,
-                snoozeUntilMillis = actedAt + SNOOZE_MINUTES * 60_000L,
+                snoozeUntilMillis = until,
+            )
+            doseAlarms.onSnoozed(
+                reminderId = id,
+                epochDay = dose.epochDay,
+                scheduledMinutes = dose.scheduledMinutes,
+                snoozeUntilMillis = until,
             )
         }
     }
 
     private companion object {
         const val CLOCK_TICK_MS = 30_000L
-        const val SNOOZE_MINUTES = 10
     }
 }
 
@@ -135,10 +146,11 @@ class HomeViewModelFactory(
     private val reminders: ReminderRepository,
     private val doseHistory: DoseHistoryRepository,
     private val preferences: PreferencesStore,
+    private val doseAlarms: DoseAlarmScheduler,
 ) : ViewModelProvider.Factory {
     @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        return HomeViewModel(reminders, doseHistory, preferences) as T
+        return HomeViewModel(reminders, doseHistory, preferences, doseAlarms) as T
     }
 }
 

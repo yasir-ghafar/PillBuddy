@@ -76,6 +76,28 @@ class DoseHistoryRepository(
         }
     }
 
+    suspend fun isTaken(reminderId: Long, epochDay: Long): Boolean {
+        return withContext(dispatcher) {
+            alreadyRecorded(reminderId, epochDay, DoseStatus.TAKEN)
+        }
+    }
+
+    suspend fun hasPendingSnooze(reminderId: Long, epochDay: Long, nowMillis: Long): Boolean {
+        return withContext(dispatcher) {
+            database.doseEventQueries
+                .countPendingSnooze(reminderId, epochDay, nowMillis)
+                .executeAsOne() > 0L
+        }
+    }
+
+    suspend fun activeSnoozes(nowMillis: Long): List<DoseEvent> {
+        return withContext(dispatcher) {
+            database.doseEventQueries.selectActiveSnoozes(nowMillis)
+                .executeAsList()
+                .mapNotNull { it.toDomain() }
+        }
+    }
+
     suspend fun recordMissed(items: List<MissedDose>, actedAtMillis: Long) {
         if (items.isEmpty()) return
         withContext(dispatcher) {

@@ -5,12 +5,19 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.techlad.pillbuddy.notification.DoseReminderPermissions
+import kotlinx.coroutines.launch
 import com.techlad.pillbuddy.data.AppContainer
 import com.techlad.pillbuddy.data.model.AppSettings
 import com.techlad.pillbuddy.ui.screens.home.HomeScreen
@@ -37,13 +44,27 @@ fun PillBuddyApp(
             reminders = container.reminders,
             doseHistory = container.doseHistory,
             preferences = container.preferences,
+            doseAlarms = container.doseAlarms,
         ),
     )
     val newReminderViewModel: NewReminderViewModel = viewModel(
         factory = NewReminderViewModelFactory(
             reminders = container.reminders,
+            doseAlarms = container.doseAlarms,
         ),
     )
+    val scope = rememberCoroutineScope()
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                scope.launch { container.doseAlarms.rescheduleAll() }
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
+    DoseReminderPermissions(enabled = screen == AppScreen.Home)
 
     BackHandler(enabled = screen != AppScreen.Onboarding) {
         screen = when (screen) {

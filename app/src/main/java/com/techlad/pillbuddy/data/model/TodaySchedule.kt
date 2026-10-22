@@ -14,6 +14,7 @@ fun scheduledDoses(
     reminders: List<Reminder>,
     events: List<DoseEvent>,
     nowMillis: Long,
+    hourCycle: Int = 12,
 ): List<ScheduledDose> {
     val epochDay = EpochDays.fromMillis(nowMillis)
     return reminders.mapNotNull { reminder ->
@@ -27,9 +28,9 @@ fun scheduledDoses(
             }
             .maxByOrNull { it.actedAtMillis }
         val timeLabel = if (activeSnooze?.snoozeUntilMillis != null) {
-            formatMillis(activeSnooze.snoozeUntilMillis)
+            formatMillis(activeSnooze.snoozeUntilMillis, hourCycle)
         } else {
-            formatClock(reminder.hour, reminder.minute)
+            formatClock(reminder.hour, reminder.minute, hourCycle)
         }
         ScheduledDose(
             remed = Remed(
@@ -45,16 +46,17 @@ fun scheduledDoses(
     }
 }
 
-fun formatClock(hour: Int, minute: Int): String {
+fun formatClock(hour: Int, minute: Int, hourCycle: Int = 12): String {
     val calendar = Calendar.getInstance()
     calendar.set(Calendar.HOUR_OF_DAY, hour)
     calendar.set(Calendar.MINUTE, minute)
     calendar.set(Calendar.SECOND, 0)
     calendar.set(Calendar.MILLISECOND, 0)
-    return SimpleDateFormat("h:mm a", Locale.US).format(calendar.time)
+    val pattern = if (hourCycle == 24) "HH:mm" else "h:mm a"
+    return SimpleDateFormat(pattern, Locale.US).format(calendar.time)
 }
 
-fun formatMillis(millis: Long): String {
+fun formatMillis(millis: Long, hourCycle: Int = 12): String {
     val calendar = Calendar.getInstance().apply { timeInMillis = millis }
-    return formatClock(calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE))
+    return formatClock(calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE), hourCycle)
 }

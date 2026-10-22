@@ -7,7 +7,7 @@
     <string name="about">About</string>
     <string name="about_body">PillBuddy helps you add medications, remember each dose, and mark them done. Everything for the day stays on one screen.</string>
     <string name="close">Close</string>
-    <string name="greeting">Hi, Charles</string>
+    <string name="greeting">Hi, %1$s</string>
     <string name="pill_reminder_count">You have %1$d reminders today</string>
     <string name="progress_label">%1$d of %2$d done</string>
     <string name="current_pill_reminder">Current reminder</string>
@@ -38,6 +38,7 @@
     <string name="hour_before">1 hour before</string>
     <string name="repeats_label">Repeats</string>
     <string name="today">Today</string>
+    <string name="yesterday">Yesterday</string>
     <string name="tomorrow">Tomorrow</string>
     <string name="back">Back</string>
     <string name="ok">OK</string>
@@ -60,9 +61,12 @@
     <string name="switch_off">Off</string>
     <string name="switch_on">On</string>
     <string name="zero_minutes">0 min</string>
+    <string name="minutes_short">%1$d min</string>
     <string name="refill_reminder">Refill reminder</string>
     <string name="refill_reminder_value">0 days before end</string>
+    <string name="refill_days_before">%1$d days before end</string>
     <string name="save">Save</string>
+    <string name="settings_saved">Saved</string>
     <string name="open_settings">Settings</string>
     <string name="text_scale">Text scale</string>
     <string name="text_scale_default">Default</string>
@@ -84,6 +88,9 @@
     <string name="dose_status_snoozed">Snoozed</string>
     <string name="dose_status_missed">Missed</string>
     <string name="dose_history_time">MMM d, h:mm a</string>
+    <string name="dose_history_date">EEE, MMM d</string>
+    <string name="dose_history_date_with_year">MMM d, yyyy</string>
+    <string name="dose_history_clock">h:mm a</string>
     <string name="notification_channel_name">Dose reminders</string>
     <string name="notification_channel_description">Alerts when a medication dose is due.</string>
     <string name="notification_due_at">Due at %1$s</string>

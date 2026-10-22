@@ -19,6 +19,15 @@ interface PreferencesStore {
 
     suspend fun setSpokenConfirmation(enabled: Boolean)
 
+    /** Latest saved settings, including defaults that have not been collected yet. */
+    suspend fun current(): AppSettings
+
+    /**
+     * Writes the profile and reminder defaults. Text scale, contrast, haptics, and
+     * spoken confirmation stay as they are.
+     */
+    suspend fun saveDefaults(settings: AppSettings)
+
     suspend fun isSamplesSeeded(): Boolean
 
     suspend fun clearSamplesSeeded()

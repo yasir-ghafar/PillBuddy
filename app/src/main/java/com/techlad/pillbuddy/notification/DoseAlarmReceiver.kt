@@ -28,6 +28,7 @@ class DoseAlarmReceiver : BroadcastReceiver() {
         val scheduledMinutes = intent.getIntExtra(EXTRA_SCHEDULED_MINUTES, 0)
         if (reminderId < 0L || epochDay < 0L) return
         val container = app.container
+        val settings = container.preferences.current()
         when (intent.action) {
             ACTION_DONE -> {
                 container.doseHistory.record(
@@ -43,7 +44,7 @@ class DoseAlarmReceiver : BroadcastReceiver() {
 
             ACTION_SNOOZE -> {
                 val actedAt = System.currentTimeMillis()
-                val until = snoozeUntil(actedAt)
+                val until = snoozeUntil(actedAt, settings.snoozeMinutes)
                 container.doseHistory.record(
                     reminderId = reminderId,
                     epochDay = epochDay,
@@ -77,6 +78,7 @@ class DoseAlarmReceiver : BroadcastReceiver() {
                         epochDay = epochDay,
                         scheduledMinutes = scheduledMinutes,
                         kind = kind,
+                        hourCycle = settings.hourCycle,
                     )
                     if (posted) container.doseAlarms.markAlerted(reminderId, epochDay)
                 } else {

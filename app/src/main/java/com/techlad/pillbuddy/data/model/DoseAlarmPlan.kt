@@ -12,7 +12,9 @@ data class DoseTrigger(
     val scheduledMinutes: Int,
 )
 
-fun snoozeUntil(fromMillis: Long): Long = fromMillis + SNOOZE_MINUTES * 60_000L
+fun snoozeUntil(fromMillis: Long, minutes: Int = SNOOZE_MINUTES): Long {
+    return fromMillis + minutes.coerceAtLeast(0) * 60_000L
+}
 
 /**
  * Next moment a reminder should alert.

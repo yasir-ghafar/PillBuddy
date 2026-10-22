@@ -55,6 +55,12 @@ class TodayScheduleTest {
         assertEquals(formatMillis(snoozeUntil), snoozed.single().remed.time)
     }
 
+    @Test
+    fun formatClockUsesTwentyFourHourCycle() {
+        assertEquals("18:05", formatClock(18, 5, hourCycle = 24))
+        assertEquals("06:00", formatClock(6, 0, hourCycle = 24))
+    }
+
     private fun reminder(startEpochDay: Long, frequency: Frequency) = Reminder(
         id = 4,
         name = "Nexium",

@@ -117,7 +117,7 @@ private fun SettingsContent(
 
         ProfileRow(
             label = stringResource(R.string.first_name),
-            value = stringResource(R.string.profile_name),
+            value = settings.firstName,
         )
 
         SectionTitle(stringResource(R.string.text_scale))

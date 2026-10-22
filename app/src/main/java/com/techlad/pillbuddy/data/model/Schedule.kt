@@ -67,6 +67,14 @@ data class AppSettings(
     val highContrast: Boolean = false,
     val haptics: Boolean = true,
     val spokenConfirmation: Boolean = false,
+    val firstName: String = "Charles",
+    val defaultFrequency: Frequency = Frequency.DAY,
+    val defaultHour: Int = 6,
+    val defaultMinute: Int = 0,
+    val hourCycle: Int = 12,
+    val notifyMinutesBefore: Int = 0,
+    val snoozeMinutes: Int = SNOOZE_MINUTES,
+    val refillDaysBefore: Int = 0,
 )
 
 fun Reminder.occursOn(epochDay: Long): Boolean {

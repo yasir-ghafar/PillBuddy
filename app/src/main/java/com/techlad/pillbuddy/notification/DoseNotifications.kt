@@ -58,13 +58,17 @@ object DoseNotifications {
         epochDay: Long,
         scheduledMinutes: Int,
         kind: String,
+        hourCycle: Int = 12,
     ): Boolean {
         if (!NotificationManagerCompat.from(context).areNotificationsEnabled()) return false
         ensureChannel(context)
         val timeLine = if (kind == KIND_SNOOZE) {
             context.getString(R.string.notification_due_now)
         } else {
-            context.getString(R.string.notification_due_at, formatClock(reminder.hour, reminder.minute))
+            context.getString(
+                R.string.notification_due_at,
+                formatClock(reminder.hour, reminder.minute, hourCycle),
+            )
         }
         val collapsed = RemoteViews(context.packageName, R.layout.notification_dose).apply {
             setTextViewText(R.id.notification_title, reminder.name)

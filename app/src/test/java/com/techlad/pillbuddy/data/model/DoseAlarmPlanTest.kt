@@ -101,6 +101,12 @@ class DoseAlarmPlanTest {
         assertEquals(1_700_000_000_000L + 10 * 60_000L, snoozeUntil(1_700_000_000_000L))
     }
 
+    @Test
+    fun snoozeUsesConfiguredMinutes() {
+        assertEquals(1_700_000_000_000L + 5 * 60_000L, snoozeUntil(1_700_000_000_000L, 5))
+        assertEquals(1_700_000_000_000L, snoozeUntil(1_700_000_000_000L, 0))
+    }
+
     private fun reminder(
         startEpochDay: Long,
         hour: Int,

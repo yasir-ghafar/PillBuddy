@@ -3,9 +3,11 @@ package com.techlad.pillbuddy.ui.screens.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.techlad.pillbuddy.data.model.DoseEvent
 import com.techlad.pillbuddy.data.model.DoseStatus
 import com.techlad.pillbuddy.data.model.EpochDays
 import com.techlad.pillbuddy.data.model.Remed
+import com.techlad.pillbuddy.data.model.Reminder
 import com.techlad.pillbuddy.data.model.ScheduledDose
 import com.techlad.pillbuddy.data.model.scheduledDoses
 import com.techlad.pillbuddy.data.model.snoozeUntil
@@ -70,10 +72,19 @@ class HomeViewModel(
                     doseHistory.observeForDay(day)
                 },
                 now,
-            ) { storedReminders, events, nowMillis ->
-                Triple(storedReminders, events, nowMillis)
-            }.collect { (storedReminders, events, nowMillis) ->
-                val doses = scheduledDoses(storedReminders, events, nowMillis)
+                preferences.settings,
+            ) { storedReminders, events, nowMillis, appSettings ->
+                HomeSnapshot(storedReminders, events, nowMillis, appSettings.hourCycle)
+            }.collect { snapshot ->
+                val storedReminders = snapshot.reminders
+                val events = snapshot.events
+                val nowMillis = snapshot.nowMillis
+                val doses = scheduledDoses(
+                    storedReminders,
+                    events,
+                    nowMillis,
+                    hourCycle = snapshot.hourCycle,
+                )
                 currentDoses = doses.associateBy { it.remed.id }
                 val ui = doses.map { it.remed }.toHomeUiState(nowMillis)
                 _uiState.value = ui
@@ -119,7 +130,7 @@ class HomeViewModel(
         val dose = currentDoses[id] ?: return
         val actedAt = System.currentTimeMillis()
         viewModelScope.launch {
-            val until = snoozeUntil(actedAt)
+            val until = snoozeUntil(actedAt, preferences.current().snoozeMinutes)
             doseHistory.record(
                 reminderId = id,
                 epochDay = dose.epochDay,
@@ -141,6 +152,13 @@ class HomeViewModel(
         const val CLOCK_TICK_MS = 30_000L
     }
 }
+
+private data class HomeSnapshot(
+    val reminders: List<Reminder>,
+    val events: List<DoseEvent>,
+    val nowMillis: Long,
+    val hourCycle: Int,
+)
 
 class HomeViewModelFactory(
     private val reminders: ReminderRepository,

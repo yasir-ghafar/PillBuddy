@@ -87,6 +87,7 @@ fun HomeScreen(
     }
     HomeScreenContent(
         state = state,
+        firstName = settings.firstName,
         onAdd = onAdd,
         onOpenSettings = onOpenSettings,
         onDone = { id ->
@@ -108,6 +109,7 @@ private fun HomeUiState.doses(): List<Remed> {
 @Composable
 private fun HomeScreenContent(
     state: HomeUiState,
+    firstName: String,
     onAdd: () -> Unit,
     onOpenSettings: () -> Unit,
     onDone: (Long) -> Unit,
@@ -149,7 +151,7 @@ private fun HomeScreenContent(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = stringResource(R.string.greeting),
+                    text = stringResource(R.string.greeting, firstName),
                     modifier = Modifier.weight(1f),
                     style = MaterialTheme.typography.headlineMedium,
                     color = PillBuddyDark
@@ -474,6 +476,7 @@ private fun HomePreview() {
     PillBuddyTheme {
         HomeScreenContent(
             state = HomeUiState(),
+            firstName = "Charles",
             onAdd = {},
             onOpenSettings = {},
             onDone = {},

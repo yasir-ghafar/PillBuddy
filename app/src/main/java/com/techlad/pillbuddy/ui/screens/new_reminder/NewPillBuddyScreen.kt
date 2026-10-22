@@ -58,9 +58,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.techlad.pillbuddy.R
+import com.techlad.pillbuddy.data.model.AppSettings
 import com.techlad.pillbuddy.data.model.EpochDays
 import com.techlad.pillbuddy.data.model.Frequency
 import com.techlad.pillbuddy.data.model.NewReminder
+import com.techlad.pillbuddy.data.model.formatClock
 import com.techlad.pillbuddy.ui.components.PrimaryPillButton
 import com.techlad.pillbuddy.ui.theme.DisplayFont
 import com.techlad.pillbuddy.ui.theme.PillBuddyTheme
@@ -85,22 +87,31 @@ private val notificationChoices = listOf(0, 5, 15, 30, 60)
 fun NewPillBuddyScreen(
     onBack: () -> Unit,
     onCreate: (NewReminder) -> Unit,
+    defaults: AppSettings = AppSettings(),
     modifier: Modifier = Modifier,
 ) {
     var name by rememberSaveable { mutableStateOf("") }
     var instructions by rememberSaveable { mutableStateOf("") }
-    var every by rememberSaveable { mutableStateOf(ScheduleEvery.Day) }
+    var every by rememberSaveable(defaults.defaultFrequency) {
+        mutableStateOf(defaults.defaultFrequency.toScheduleEvery())
+    }
     var startDate by remember { mutableStateOf(FormDate.today()) }
     var endDate by remember { mutableStateOf(FormDate.today().plusYears(1)) }
-    var hour by rememberSaveable { mutableIntStateOf(6) }
-    var minute by rememberSaveable { mutableIntStateOf(0) }
-    var notifyMinutes by rememberSaveable { mutableIntStateOf(0) }
+    var hour by rememberSaveable(defaults.defaultHour, defaults.defaultMinute) {
+        mutableIntStateOf(defaults.defaultHour)
+    }
+    var minute by rememberSaveable(defaults.defaultHour, defaults.defaultMinute) {
+        mutableIntStateOf(defaults.defaultMinute)
+    }
+    var notifyMinutes by rememberSaveable(defaults.notifyMinutesBefore) {
+        mutableIntStateOf(defaults.notifyMinutesBefore)
+    }
     var picker by rememberSaveable { mutableStateOf(ActivePicker.None) }
 
     val todayLabel = stringResource(R.string.today)
     val tomorrowLabel = stringResource(R.string.tomorrow)
-    val repeats = upcomingRepeats(every, hour, minute, todayLabel, tomorrowLabel)
-    val timeLabel = formatTime(hour, minute)
+    val repeats = upcomingRepeats(every, hour, minute, defaults.hourCycle, todayLabel, tomorrowLabel)
+    val timeLabel = formatClock(hour, minute, defaults.hourCycle)
 
     Column(
         modifier = modifier
@@ -320,6 +331,7 @@ fun NewPillBuddyScreen(
         ActivePicker.Time -> TimeFieldDialog(
             hour = hour,
             minute = minute,
+            hourCycle = defaults.hourCycle,
             onDismiss = { picker = ActivePicker.None },
             onConfirm = { pickedHour, pickedMinute ->
                 hour = pickedHour
@@ -441,10 +453,15 @@ private fun DateFieldDialog(
 private fun TimeFieldDialog(
     hour: Int,
     minute: Int,
+    hourCycle: Int,
     onDismiss: () -> Unit,
     onConfirm: (Int, Int) -> Unit,
 ) {
-    val state = rememberTimePickerState(initialHour = hour, initialMinute = minute, is24Hour = false)
+    val state = rememberTimePickerState(
+        initialHour = hour,
+        initialMinute = minute,
+        is24Hour = hourCycle == 24,
+    )
     Dialog(onDismissRequest = onDismiss) {
         Surface(shape = RoundedCornerShape(28.dp), color = PillBuddyCard) {
             Column(
@@ -522,6 +539,12 @@ private fun ScheduleEvery.toFrequency(): Frequency = when (this) {
     ScheduleEvery.Month -> Frequency.MONTH
 }
 
+private fun Frequency.toScheduleEvery(): ScheduleEvery = when (this) {
+    Frequency.DAY -> ScheduleEvery.Day
+    Frequency.WEEK -> ScheduleEvery.Week
+    Frequency.MONTH -> ScheduleEvery.Month
+}
+
 private data class FormDate(val year: Int, val month: Int, val day: Int) {
     fun toUtcMillis(): Long {
         val utc = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
@@ -575,21 +598,15 @@ private data class FormDate(val year: Int, val month: Int, val day: Int) {
 
 private data class RepeatRow(val label: String, val time: String)
 
-private fun formatTime(hour: Int, minute: Int): String {
-    val calendar = Calendar.getInstance()
-    calendar.set(Calendar.HOUR_OF_DAY, hour)
-    calendar.set(Calendar.MINUTE, minute)
-    return SimpleDateFormat("h:mm a", Locale.US).format(calendar.time)
-}
-
 private fun upcomingRepeats(
     every: ScheduleEvery,
     hour: Int,
     minute: Int,
+    hourCycle: Int,
     todayLabel: String,
     tomorrowLabel: String,
 ): List<RepeatRow> {
-    val timeText = formatTime(hour, minute)
+    val timeText = formatClock(hour, minute, hourCycle)
     val dayFormat = SimpleDateFormat("EEE, MMM d", Locale.US)
     val start = Calendar.getInstance().apply {
         set(Calendar.HOUR_OF_DAY, 0)

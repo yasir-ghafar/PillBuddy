@@ -109,6 +109,7 @@ fun PillBuddyApp(
 
             AppScreen.NewPillBuddy -> NewPillBuddyScreen(
                 onBack = { screen = AppScreen.Home },
+                defaults = settings,
                 onCreate = { draft ->
                     newReminderViewModel.createReminder(draft)
                     screen = AppScreen.Home

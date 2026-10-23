@@ -2,22 +2,64 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical">
+    android:background="@drawable/bg_notification_surface"
+    android:forceDarkAllowed="false"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:paddingTop="2dp"
+    android:paddingBottom="2dp">
+
+    <ImageView
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:background="@drawable/bg_notification_icon_well"
+        android:importantForAccessibility="no"
+        android:padding="9dp"
+        android:scaleType="fitCenter"
+        android:src="@drawable/ic_notification_capsule" />
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/notification_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:fontFamily="serif"
+            android:maxLines="1"
+            android:typeface="serif"
+            android:textColor="@color/pill_buddy_dark"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/notification_time"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="1dp"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:textColor="@color/pill_buddy_darker"
+            android:textSize="13sp" />
+    </LinearLayout>
 
     <TextView
-        android:id="@+id/notification_title"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:ellipsize="end"
-        android:maxLines="1"
-        android:textAppearance="@style/TextAppearance.Compat.Notification.Title" />
-
-    <TextView
-        android:id="@+id/notification_time"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="2dp"
-        android:ellipsize="end"
-        android:maxLines="1"
-        android:textAppearance="@style/TextAppearance.Compat.Notification.Info" />
+        android:id="@+id/notification_done"
+        android:layout_width="wrap_content"
+        android:layout_height="36dp"
+        android:layout_marginStart="8dp"
+        android:background="@drawable/bg_notification_done"
+        android:gravity="center"
+        android:minWidth="68dp"
+        android:paddingStart="14dp"
+        android:paddingEnd="14dp"
+        android:text="@string/done"
+        android:textColor="@color/white"
+        android:textSize="13sp"
+        android:textStyle="bold" />
 </LinearLayout>

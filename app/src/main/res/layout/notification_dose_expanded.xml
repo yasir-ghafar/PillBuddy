@@ -2,24 +2,39 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical">
+    android:background="@drawable/bg_notification_surface"
+    android:forceDarkAllowed="false"
+    android:orientation="vertical"
+    android:paddingTop="4dp"
+    android:paddingBottom="2dp">
+
+    <TextView
+        android:id="@+id/notification_time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_notification_chip"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:paddingStart="10dp"
+        android:paddingTop="4dp"
+        android:paddingEnd="10dp"
+        android:paddingBottom="4dp"
+        android:textColor="@color/pill_buddy_dark"
+        android:textSize="13sp"
+        android:textStyle="bold" />
 
     <TextView
         android:id="@+id/notification_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
         android:ellipsize="end"
-        android:maxLines="1"
-        android:textAppearance="@style/TextAppearance.Compat.Notification.Title" />
-
-    <TextView
-        android:id="@+id/notification_time"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="2dp"
-        android:ellipsize="end"
-        android:maxLines="1"
-        android:textAppearance="@style/TextAppearance.Compat.Notification.Info" />
+        android:fontFamily="serif"
+        android:maxLines="2"
+        android:typeface="serif"
+        android:textColor="@color/pill_buddy_dark"
+        android:textSize="20sp"
+        android:textStyle="bold" />
 
     <TextView
         android:id="@+id/notification_body"
@@ -27,6 +42,46 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
         android:ellipsize="end"
-        android:maxLines="3"
-        android:textAppearance="@style/TextAppearance.Compat.Notification.Line2" />
+        android:maxLines="2"
+        android:textColor="@color/pill_buddy_darker"
+        android:textSize="14sp" />
+
+    <LinearLayout
+        android:id="@+id/notification_action_done"
+        android:layout_width="match_parent"
+        android:layout_height="42dp"
+        android:layout_marginTop="12dp"
+        android:background="@drawable/bg_notification_done"
+        android:gravity="center"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:id="@+id/notification_action_done_icon"
+            android:layout_width="16dp"
+            android:layout_height="16dp"
+            android:importantForAccessibility="no"
+            android:src="@drawable/ic_notification_done" />
+
+        <TextView
+            android:id="@+id/notification_action_done_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:text="@string/done"
+            android:textColor="@color/white"
+            android:textSize="15sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/notification_action_snooze"
+        android:layout_width="match_parent"
+        android:layout_height="42dp"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/bg_notification_snooze"
+        android:gravity="center"
+        android:text="@string/snooze"
+        android:textColor="@color/pill_buddy_dark"
+        android:textSize="15sp"
+        android:textStyle="bold" />
 </LinearLayout>

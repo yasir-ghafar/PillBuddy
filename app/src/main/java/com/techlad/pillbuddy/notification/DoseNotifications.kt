@@ -47,6 +47,8 @@ object DoseNotifications {
         ).apply {
             description = context.getString(R.string.notification_channel_description)
             enableVibration(true)
+            enableLights(true)
+            lightColor = context.getColor(R.color.pill_buddy_medium)
             lockscreenVisibility = NotificationCompat.VISIBILITY_PUBLIC
         }
         manager.createNotificationChannel(channel)
@@ -70,9 +72,27 @@ object DoseNotifications {
                 formatClock(reminder.hour, reminder.minute, hourCycle),
             )
         }
+        val doneIntent = actionIntent(
+            context,
+            ACTION_DONE,
+            reminder.id,
+            epochDay,
+            scheduledMinutes,
+            SLOT_DONE,
+        )
+        val snoozeIntent = actionIntent(
+            context,
+            ACTION_SNOOZE,
+            reminder.id,
+            epochDay,
+            scheduledMinutes,
+            SLOT_SNOOZE_ACTION,
+        )
         val collapsed = RemoteViews(context.packageName, R.layout.notification_dose).apply {
             setTextViewText(R.id.notification_title, reminder.name)
             setTextViewText(R.id.notification_time, timeLine)
+            setContentDescription(R.id.notification_done, context.getString(R.string.done))
+            setOnClickPendingIntent(R.id.notification_done, doneIntent)
         }
         val expanded = RemoteViews(context.packageName, R.layout.notification_dose_expanded).apply {
             setTextViewText(R.id.notification_title, reminder.name)
@@ -83,6 +103,14 @@ object DoseNotifications {
                 setViewVisibility(R.id.notification_body, View.VISIBLE)
                 setTextViewText(R.id.notification_body, reminder.instructions)
             }
+            val doneLabel = context.getString(R.string.done)
+            val snoozeLabel = context.getString(R.string.snooze)
+            setContentDescription(R.id.notification_action_done, doneLabel)
+            setContentDescription(R.id.notification_action_snooze, snoozeLabel)
+            setOnClickPendingIntent(R.id.notification_action_done, doneIntent)
+            setOnClickPendingIntent(R.id.notification_action_done_icon, doneIntent)
+            setOnClickPendingIntent(R.id.notification_action_done_label, doneIntent)
+            setOnClickPendingIntent(R.id.notification_action_snooze, snoozeIntent)
         }
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_stat_dose)
@@ -99,8 +127,6 @@ object DoseNotifications {
             .setAutoCancel(false)
             .setOnlyAlertOnce(false)
             .setContentIntent(openAppIntent(context, reminder.id))
-            .addAction(doneAction(context, reminder.id, epochDay, scheduledMinutes))
-            .addAction(snoozeAction(context, reminder.id, epochDay, scheduledMinutes))
             .build()
         return try {
             NotificationManagerCompat.from(context).notify(reminder.id.toInt(), notification)
@@ -112,32 +138,6 @@ object DoseNotifications {
 
     fun cancel(context: Context, reminderId: Long) {
         NotificationManagerCompat.from(context).cancel(reminderId.toInt())
-    }
-
-    private fun doneAction(
-        context: Context,
-        reminderId: Long,
-        epochDay: Long,
-        scheduledMinutes: Int,
-    ): NotificationCompat.Action {
-        return NotificationCompat.Action.Builder(
-            R.drawable.ic_notification_done,
-            context.getString(R.string.done),
-            actionIntent(context, ACTION_DONE, reminderId, epochDay, scheduledMinutes, SLOT_DONE),
-        ).build()
-    }
-
-    private fun snoozeAction(
-        context: Context,
-        reminderId: Long,
-        epochDay: Long,
-        scheduledMinutes: Int,
-    ): NotificationCompat.Action {
-        return NotificationCompat.Action.Builder(
-            R.drawable.ic_notification_snooze,
-            context.getString(R.string.snooze),
-            actionIntent(context, ACTION_SNOOZE, reminderId, epochDay, scheduledMinutes, SLOT_SNOOZE_ACTION),
-        ).build()
     }
 
     private fun actionIntent(

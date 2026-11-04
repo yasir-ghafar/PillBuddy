@@ -12,10 +12,15 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 
+interface ReminderStore {
+    suspend fun insert(draft: NewReminder): Long
+    suspend fun getById(id: Long): Reminder?
+}
+
 class ReminderRepository(
     private val database: PillBuddyDatabase,
     private val dispatcher: CoroutineDispatcher,
-) {
+) : ReminderStore {
     fun observeAll(): Flow<List<Reminder>> {
         return database.reminderQueries.selectAll()
             .asFlow()
@@ -23,7 +28,7 @@ class ReminderRepository(
             .map { rows -> rows.map { it.toDomain() } }
     }
 
-    suspend fun insert(draft: NewReminder): Long {
+    override suspend fun insert(draft: NewReminder): Long {
         return withContext(dispatcher) {
             database.transactionWithResult {
                 database.reminderQueries.insert(
@@ -42,7 +47,7 @@ class ReminderRepository(
         }
     }
 
-    suspend fun getById(id: Long): Reminder? {
+    override suspend fun getById(id: Long): Reminder? {
         return withContext(dispatcher) {
             database.reminderQueries.selectById(id).executeAsOneOrNull()?.toDomain()
         }

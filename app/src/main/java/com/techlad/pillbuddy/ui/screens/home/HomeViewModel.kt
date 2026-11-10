@@ -38,6 +38,7 @@ data class HomeUiState(
     val completedCount: Int = 0,
     val totalCount: Int = 0,
     val dateLabel: String = "",
+    val isLoading: Boolean = false,
 )
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -47,7 +48,7 @@ class HomeViewModel(
     private val preferences: PreferencesStore,
     private val doseAlarms: DoseAlarmScheduler,
 ) : ViewModel() {
-    private val _uiState = MutableStateFlow(HomeUiState())
+    private val _uiState = MutableStateFlow(HomeUiState(isLoading = true))
     private val now = MutableStateFlow(System.currentTimeMillis())
     private var currentDoses: Map<Long, ScheduledDose> = emptyMap()
 
@@ -66,6 +67,7 @@ class HomeViewModel(
                 preferences.clearSamplesSeeded()
             }
             doseAlarms.rescheduleAll()
+            var firstLoad = true
             combine(
                 reminders.observeAll(),
                 now.map { EpochDays.fromMillis(it) }.distinctUntilChanged().flatMapLatest { day ->
@@ -87,6 +89,10 @@ class HomeViewModel(
                 )
                 currentDoses = doses.associateBy { it.remed.id }
                 val ui = doses.map { it.remed }.toHomeUiState(nowMillis)
+                if (firstLoad) {
+                    delay(MIN_LOADING_MS)
+                    firstLoad = false
+                }
                 _uiState.value = ui
                 val missedIds = ui.missed.map { it.id }.toSet()
                 val toRecord = doses.mapNotNull { dose ->
@@ -150,6 +156,7 @@ class HomeViewModel(
 
     private companion object {
         const val CLOCK_TICK_MS = 30_000L
+        const val MIN_LOADING_MS = 450L
     }
 }
 

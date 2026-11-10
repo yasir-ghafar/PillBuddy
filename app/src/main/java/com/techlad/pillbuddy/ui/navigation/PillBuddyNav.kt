@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
@@ -39,6 +40,7 @@ fun PillBuddyApp(
     settings: AppSettings,
 ) {
     var screen by rememberSaveable { mutableStateOf(AppScreen.Onboarding) }
+    var bootstrapped by rememberSaveable { mutableStateOf(false) }
     val homeViewModel: HomeViewModel = viewModel(
         factory = HomeViewModelFactory(
             reminders = container.reminders,
@@ -55,6 +57,17 @@ fun PillBuddyApp(
     )
     val scope = rememberCoroutineScope()
     val lifecycleOwner = LocalLifecycleOwner.current
+    LaunchedEffect(Unit) {
+        if (!bootstrapped) {
+            val completed = container.preferences.isOnboardingCompleted()
+            if (!completed) {
+                screen = AppScreen.Onboarding
+            } else if (screen == AppScreen.Onboarding) {
+                screen = AppScreen.Home
+            }
+            bootstrapped = true
+        }
+    }
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
@@ -64,14 +77,19 @@ fun PillBuddyApp(
         lifecycleOwner.lifecycle.addObserver(observer)
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
-    DoseReminderPermissions(enabled = screen == AppScreen.Home)
+    DoseReminderPermissions(enabled = bootstrapped && screen == AppScreen.Home)
 
-    BackHandler(enabled = screen != AppScreen.Onboarding) {
+    // Home leaves the system back stack so Back exits the app instead of reopening onboarding.
+    BackHandler(enabled = bootstrapped && screen != AppScreen.Onboarding && screen != AppScreen.Home) {
         screen = when (screen) {
-            AppScreen.Home -> AppScreen.Onboarding
             AppScreen.DoseHistory -> AppScreen.Settings
             else -> AppScreen.Home
         }
+    }
+
+    if (!bootstrapped) {
+        Scaffold(containerColor = PillBuddyBackground) { }
+        return
     }
 
     Scaffold(
@@ -82,7 +100,12 @@ fun PillBuddyApp(
             .background(PillBuddyBackground)
         when (screen) {
             AppScreen.Onboarding -> OnboardingScreen(
-                onContinue = { screen = AppScreen.Home },
+                onContinue = {
+                    scope.launch {
+                        container.preferences.setOnboardingCompleted()
+                        screen = AppScreen.Home
+                    }
+                },
                 modifier = contentModifier
             )
 

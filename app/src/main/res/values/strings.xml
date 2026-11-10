@@ -46,6 +46,7 @@
     <string name="all_pill_reminders_done">All reminders are done for today.</string>
     <string name="no_pill_reminders_title">No reminders yet</string>
     <string name="no_pill_reminders">Add a reminder to keep track of today\'s doses.</string>
+    <string name="loading_reminders">Loading reminders</string>
     <string name="share_pill_reminders">Share today\'s reminders</string>
     <string name="share_pill_reminder_summary">You have %1$d reminders today. %2$d of %1$d done.</string>
     <string name="share_chooser">Share</string>

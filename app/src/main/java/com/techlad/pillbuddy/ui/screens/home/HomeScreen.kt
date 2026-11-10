@@ -19,6 +19,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AccessTime
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.Share
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -190,7 +191,13 @@ private fun HomeScreenContent(
                     )
                 }
             }
-            if (state.totalCount == 0) {
+            if (state.isLoading) {
+                LoadingReminders(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 72.dp)
+                )
+            } else if (state.totalCount == 0) {
                 EmptyRemindersMessage(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -287,6 +294,28 @@ private fun HomeScreenContent(
                 modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp)
             )
         }
+    }
+}
+
+@Composable
+private fun LoadingReminders(modifier: Modifier = Modifier) {
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        CircularProgressIndicator(
+            color = PillBuddyDark,
+            trackColor = PillBuddyLighter,
+            modifier = Modifier.size(36.dp),
+            strokeWidth = 3.dp,
+        )
+        Text(
+            text = stringResource(R.string.loading_reminders),
+            modifier = Modifier.padding(top = 16.dp),
+            style = MaterialTheme.typography.bodyMedium,
+            color = PillBuddyDarker,
+            textAlign = TextAlign.Center
+        )
     }
 }
 

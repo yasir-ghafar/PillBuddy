@@ -99,6 +99,21 @@ class DataStorePreferencesStore(
         }
     }
 
+    override suspend fun isOnboardingCompleted(): Boolean {
+        return dataStore.data
+            .catch { error ->
+                if (error is IOException) emit(emptyPreferences()) else throw error
+            }
+            .map { preferences -> preferences[Keys.ONBOARDING_COMPLETED] ?: false }
+            .first()
+    }
+
+    override suspend fun setOnboardingCompleted() {
+        dataStore.edit { preferences ->
+            preferences[Keys.ONBOARDING_COMPLETED] = true
+        }
+    }
+
     private fun Preferences.toAppSettings(): AppSettings {
         val scale = this[Keys.TEXT_SCALE]
             ?.let { name -> TextScale.entries.firstOrNull { it.name == name } }
@@ -129,6 +144,7 @@ class DataStorePreferencesStore(
         val HAPTICS = booleanPreferencesKey("haptics")
         val SPOKEN_CONFIRMATION = booleanPreferencesKey("spoken_confirmation")
         val SAMPLES_SEEDED = booleanPreferencesKey("samples_seeded")
+        val ONBOARDING_COMPLETED = booleanPreferencesKey("onboarding_completed")
         val FIRST_NAME = stringPreferencesKey("first_name")
         val DEFAULT_FREQUENCY = stringPreferencesKey("default_frequency")
         val DEFAULT_HOUR = intPreferencesKey("default_hour")

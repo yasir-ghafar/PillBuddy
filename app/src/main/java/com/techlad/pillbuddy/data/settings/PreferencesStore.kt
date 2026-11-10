@@ -31,4 +31,8 @@ interface PreferencesStore {
     suspend fun isSamplesSeeded(): Boolean
 
     suspend fun clearSamplesSeeded()
+
+    suspend fun isOnboardingCompleted(): Boolean
+
+    suspend fun setOnboardingCompleted()
 }

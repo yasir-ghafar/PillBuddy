@@ -66,10 +66,8 @@ class CreateReminderIntegrationTest {
                         hourCycle = 24,
                         notifyMinutesBefore = 0,
                     ),
-                    onCreate = { draft ->
-                        viewModel.createReminder(draft)
-                        leftScreen = true
-                    },
+                    onSave = { draft -> viewModel.createReminder(draft) },
+                    onSaved = { leftScreen = true },
                 )
             }
         }
@@ -93,7 +91,9 @@ class CreateReminderIntegrationTest {
             .performClick()
 
         composeRule.waitForIdle()
-        assertTrue(composeRule.runOnIdle { leftScreen })
+        composeRule.waitUntil(timeoutMillis = 5_000) {
+            composeRule.runOnIdle { leftScreen }
+        }
         composeRule.waitUntil(timeoutMillis = 5_000) {
             runBlocking { reminders.listAll().size == 1 }
         }
@@ -138,10 +138,17 @@ class CreateReminderIntegrationTest {
 
     private class RecordingScheduler : SavedReminderScheduler {
         private val scheduled = mutableListOf<Scheduled>()
+        private val cancelled = mutableListOf<Long>()
 
         override suspend fun schedule(reminder: Reminder, fireImmediatelyIfLeadPassed: Boolean) {
             synchronized(scheduled) {
                 scheduled += Scheduled(reminder, fireImmediatelyIfLeadPassed)
+            }
+        }
+
+        override fun cancel(reminderId: Long) {
+            synchronized(cancelled) {
+                cancelled += reminderId
             }
         }
 

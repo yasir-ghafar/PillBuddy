@@ -55,7 +55,7 @@ class CreateReminderStorageTest {
             notifyMinutesBefore = 15,
         )
 
-        viewModel.createReminder(draft)
+        runBlocking { assertTrue(viewModel.createReminder(draft)) }
 
         val saved = runBlocking { reminders.listAll().single() }
         assertEquals(draft.name, saved.name)
@@ -72,9 +72,14 @@ class CreateReminderStorageTest {
 
     private class RecordingScheduler : SavedReminderScheduler {
         val scheduled = mutableListOf<Scheduled>()
+        val cancelled = mutableListOf<Long>()
 
         override suspend fun schedule(reminder: Reminder, fireImmediatelyIfLeadPassed: Boolean) {
             scheduled += Scheduled(reminder, fireImmediatelyIfLeadPassed)
+        }
+
+        override fun cancel(reminderId: Long) {
+            cancelled += reminderId
         }
     }
 

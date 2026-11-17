@@ -71,7 +71,7 @@ class DataStorePreferencesStore(
             preferences[Keys.HOUR_CYCLE] = cycle
             preferences[Keys.NOTIFY_MINUTES] = settings.notifyMinutesBefore.coerceAtLeast(0)
             preferences[Keys.SNOOZE_MINUTES] = settings.snoozeMinutes.coerceAtLeast(0)
-            preferences[Keys.REFILL_DAYS] = settings.refillDaysBefore.coerceAtLeast(0)
+            preferences.remove(Keys.REFILL_DAYS)
         }
     }
 
@@ -134,7 +134,6 @@ class DataStorePreferencesStore(
             hourCycle = if (this[Keys.HOUR_CYCLE] == 24) 24 else 12,
             notifyMinutesBefore = (this[Keys.NOTIFY_MINUTES] ?: defaults.notifyMinutesBefore).coerceAtLeast(0),
             snoozeMinutes = (this[Keys.SNOOZE_MINUTES] ?: defaults.snoozeMinutes).coerceAtLeast(0),
-            refillDaysBefore = (this[Keys.REFILL_DAYS] ?: defaults.refillDaysBefore).coerceAtLeast(0),
         )
     }
 

@@ -15,6 +15,8 @@ import kotlinx.coroutines.withContext
 interface ReminderStore {
     suspend fun insert(draft: NewReminder): Long
     suspend fun getById(id: Long): Reminder?
+    suspend fun update(reminder: Reminder)
+    suspend fun deleteById(id: Long)
 }
 
 class ReminderRepository(
@@ -50,6 +52,28 @@ class ReminderRepository(
     override suspend fun getById(id: Long): Reminder? {
         return withContext(dispatcher) {
             database.reminderQueries.selectById(id).executeAsOneOrNull()?.toDomain()
+        }
+    }
+
+    override suspend fun update(reminder: Reminder) {
+        withContext(dispatcher) {
+            database.reminderQueries.update(
+                name = reminder.name,
+                instructions = reminder.instructions,
+                hour = reminder.hour.toLong(),
+                minute = reminder.minute.toLong(),
+                frequency = reminder.frequency.name,
+                startEpochDay = reminder.startEpochDay,
+                endEpochDay = reminder.endEpochDay,
+                notifyMinutesBefore = reminder.notifyMinutesBefore.toLong(),
+                id = reminder.id,
+            )
+        }
+    }
+
+    override suspend fun deleteById(id: Long) {
+        withContext(dispatcher) {
+            database.reminderQueries.deleteById(id)
         }
     }
 

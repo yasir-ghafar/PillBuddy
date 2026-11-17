@@ -2,6 +2,7 @@ package com.techlad.pillbuddy.ui.screens.new_reminder
 
 import com.techlad.pillbuddy.data.model.EpochDays
 import com.techlad.pillbuddy.data.model.Frequency
+import com.techlad.pillbuddy.data.model.Reminder
 import com.techlad.pillbuddy.data.model.formatClock
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
@@ -104,12 +105,54 @@ class NewReminderFormTest {
         val date = FormDate(2026, Calendar.MARCH, 1)
 
         assertEquals(date, FormDate.fromUtcMillis(date.toUtcMillis()))
+        assertEquals(date, FormDate.fromEpochDay(date.toEpochDay()))
         assertEquals(EpochDays.of(2026, Calendar.MARCH, 1), date.toEpochDay())
         assertEquals("1 Mar 2026", date.format())
         assertEquals(FormDate(2027, Calendar.MARCH, 1), date.plusYears(1))
         assertEquals(
             FormDate(2025, Calendar.FEBRUARY, 28),
             FormDate(2024, Calendar.FEBRUARY, 29).plusYears(1),
+        )
+    }
+
+    @Test
+    fun reminderDraftHelpersPrefillAndApplyEdits() {
+        val reminder = Reminder(
+            id = 7L,
+            name = "Nexium",
+            instructions = "before meals",
+            hour = 9,
+            minute = 0,
+            frequency = Frequency.DAY,
+            startEpochDay = FormDate(2026, Calendar.MARCH, 1).toEpochDay(),
+            endEpochDay = null,
+            notifyMinutesBefore = 5,
+        )
+        val draft = newReminderDraft(
+            name = "Nexium XR",
+            instructions = "with water",
+            every = ScheduleEvery.Week,
+            startDate = FormDate(2026, Calendar.APRIL, 1),
+            endDate = FormDate(2027, Calendar.APRIL, 1),
+            hour = 10,
+            minute = 15,
+            notifyMinutesBefore = 30,
+        )!!
+
+        assertEquals(FormDate(2026, Calendar.MARCH, 1), reminder.formStartDate())
+        assertEquals(FormDate(2027, Calendar.MARCH, 1), reminder.formEndDate())
+        assertEquals(
+            reminder.copy(
+                name = "Nexium XR",
+                instructions = "with water",
+                hour = 10,
+                minute = 15,
+                frequency = Frequency.WEEK,
+                startEpochDay = draft.startEpochDay,
+                endEpochDay = draft.endEpochDay,
+                notifyMinutesBefore = 30,
+            ),
+            reminder.withDraft(draft),
         )
     }
 

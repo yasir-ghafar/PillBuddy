@@ -71,7 +71,6 @@ import kotlinx.coroutines.launch
 private val CardShape = RoundedCornerShape(20.dp)
 private val notificationChoices = listOf(0, 5, 15, 30, 60)
 private val snoozeChoices = listOf(0, 5, 10, 15, 30)
-private val refillChoices = listOf(0, 1, 3, 7, 14)
 private val hourCycles = listOf(12, 24)
 
 private enum class SettingsEditor {
@@ -82,7 +81,6 @@ private enum class SettingsEditor {
     Hours,
     Notification,
     Snooze,
-    Refill,
 }
 
 @Composable
@@ -101,7 +99,6 @@ fun SettingsFormScreen(
     var hourCycle by rememberSaveable { mutableIntStateOf(12) }
     var notifyMinutes by rememberSaveable { mutableIntStateOf(0) }
     var snoozeMinutes by rememberSaveable { mutableIntStateOf(AppSettings().snoozeMinutes) }
-    var refillDays by rememberSaveable { mutableIntStateOf(0) }
     var editor by rememberSaveable { mutableStateOf(SettingsEditor.None) }
     var savedVisible by rememberSaveable { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
@@ -116,7 +113,6 @@ fun SettingsFormScreen(
             hourCycle = current.hourCycle
             notifyMinutes = current.notifyMinutesBefore
             snoozeMinutes = current.snoozeMinutes
-            refillDays = current.refillDaysBefore
             defaultsReady = true
         }
     }
@@ -141,7 +137,6 @@ fun SettingsFormScreen(
         hourCycle = hourCycle,
         notifyMinutesBefore = notifyMinutes,
         snoozeMinutes = snoozeMinutes,
-        refillDaysBefore = refillDays,
     )
 
     SettingsContent(
@@ -155,9 +150,12 @@ fun SettingsFormScreen(
         onEditHourCycle = { editor = SettingsEditor.Hours },
         onEditNotification = { editor = SettingsEditor.Notification },
         onEditSnooze = { editor = SettingsEditor.Snooze },
-        onEditRefill = { editor = SettingsEditor.Refill },
         onTextScale = { scale -> scope.launch { preferences.setTextScale(scale) } },
+        onHighContrast = { enabled -> scope.launch { preferences.setHighContrast(enabled) } },
         onHaptics = { enabled -> scope.launch { preferences.setHaptics(enabled) } },
+        onSpokenConfirmation = { enabled ->
+            scope.launch { preferences.setSpokenConfirmation(enabled) }
+        },
         onSave = {
             scope.launch {
                 preferences.saveDefaults(shown)
@@ -239,20 +237,6 @@ fun SettingsFormScreen(
             )
         }
 
-        SettingsEditor.Refill -> {
-            val options = dayOptions(refillDays)
-            ChoiceDialog(
-                title = stringResource(R.string.refill_reminder),
-                choices = refillChoiceLabels(options),
-                selectedIndex = options.indexOf(refillDays),
-                onDismiss = { editor = SettingsEditor.None },
-                onSelect = { index ->
-                    refillDays = options[index]
-                    editor = SettingsEditor.None
-                },
-            )
-        }
-
         SettingsEditor.None -> Unit
     }
 }
@@ -270,9 +254,10 @@ private fun SettingsContent(
     onEditHourCycle: () -> Unit,
     onEditNotification: () -> Unit,
     onEditSnooze: () -> Unit,
-    onEditRefill: () -> Unit,
     onTextScale: (TextScale) -> Unit,
+    onHighContrast: (Boolean) -> Unit,
     onHaptics: (Boolean) -> Unit,
+    onSpokenConfirmation: (Boolean) -> Unit,
     onSave: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -313,15 +298,6 @@ private fun SettingsContent(
         }
 
         SettingsCard(modifier = Modifier.padding(top = 14.dp)) {
-            /*SwitchRow(
-                title = stringResource(R.string.dark_mode),
-                body = stringResource(if (settings) R.string.switch_on else R.string.switch_off),
-                checked = darkMode,
-                onCheckedChange = { darkMode = it },
-            )*/
-        }
-
-        SettingsCard(modifier = Modifier.padding(top = 14.dp)) {
             ValueRow(
                 label = stringResource(R.string.notification_label),
                 value = minutesLabel(settings.notifyMinutesBefore),
@@ -332,12 +308,6 @@ private fun SettingsContent(
                 label = stringResource(R.string.snooze),
                 value = minutesLabel(settings.snoozeMinutes),
                 onClick = onEditSnooze,
-            )
-            CardDivider()
-            ValueRow(
-                label = stringResource(R.string.refill_reminder),
-                value = refillLabel(settings.refillDaysBefore),
-                onClick = onEditRefill,
             )
         }
 
@@ -363,11 +333,23 @@ private fun SettingsContent(
         }
 
         SettingSwitch(
+            title = stringResource(R.string.high_contrast),
+            body = stringResource(R.string.high_contrast_description),
+            checked = settings.highContrast,
+            onCheckedChange = onHighContrast,
+            modifier = Modifier.padding(top = 8.dp),
+        )
+        SettingSwitch(
             title = stringResource(R.string.haptics),
             body = stringResource(R.string.haptics_description),
             checked = settings.haptics,
             onCheckedChange = onHaptics,
-            modifier = Modifier.padding(top = 8.dp),
+        )
+        SettingSwitch(
+            title = stringResource(R.string.spoken_confirmation),
+            body = stringResource(R.string.spoken_confirmation_description),
+            checked = settings.spokenConfirmation,
+            onCheckedChange = onSpokenConfirmation,
         )
 
         SettingsCard(modifier = Modifier.padding(top = 14.dp)) {
@@ -506,37 +488,6 @@ private fun NavigationRow(
             contentDescription = null,
             tint = PillBuddyDarker,
         )
-    }
-}
-
-@Composable
-private fun SwitchRow(
-    title: String,
-    body: String,
-    checked: Boolean,
-    onCheckedChange: (Boolean) -> Unit,
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = title,
-                color = PillBuddyDark,
-                fontWeight = FontWeight.Medium,
-                fontSize = 16.sp,
-            )
-            Text(
-                text = body,
-                modifier = Modifier.padding(top = 2.dp),
-                color = PillBuddyDarker,
-                fontSize = 13.sp,
-            )
-        }
-        SettingsSwitch(checked = checked, onCheckedChange = onCheckedChange)
     }
 }
 
@@ -748,15 +699,6 @@ private fun minuteChoiceLabels(values: List<Int>): List<String> {
 }
 
 @Composable
-private fun refillChoiceLabels(values: List<Int>): List<String> {
-    val labels = ArrayList<String>(values.size)
-    for (value in values) {
-        labels += refillLabel(value)
-    }
-    return labels
-}
-
-@Composable
 private fun frequencyLabel(frequency: Frequency): String {
     val res = when (frequency) {
         Frequency.DAY -> R.string.every_day
@@ -775,21 +717,8 @@ private fun minutesLabel(minutes: Int): String {
     }
 }
 
-@Composable
-private fun refillLabel(days: Int): String {
-    return if (days == 0) {
-        stringResource(R.string.refill_reminder_value)
-    } else {
-        stringResource(R.string.refill_days_before, days)
-    }
-}
-
 private fun minuteOptions(presets: List<Int>, selected: Int): List<Int> {
     return (presets + selected).distinct().sorted()
-}
-
-private fun dayOptions(selected: Int): List<Int> {
-    return (refillChoices + selected).distinct().sorted()
 }
 
 private val TextScale.labelRes: Int

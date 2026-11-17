@@ -96,15 +96,19 @@ fun PrimaryPillButton(
     text: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    enabled: Boolean = true,
     leading: @Composable (() -> Unit)? = null,
 ) {
     Button(
         onClick = onClick,
+        enabled = enabled,
         modifier = modifier.height(52.dp),
         shape = PillShape,
         colors = ButtonDefaults.buttonColors(
             containerColor = PillBuddyDark,
-            contentColor = PillBuddyOnPrimary
+            contentColor = PillBuddyOnPrimary,
+            disabledContainerColor = PillBuddyDark.copy(alpha = 0.45f),
+            disabledContentColor = PillBuddyOnPrimary,
         ),
         elevation = ButtonDefaults.buttonElevation(
             defaultElevation = 0.dp,

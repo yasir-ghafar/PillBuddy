@@ -17,9 +17,13 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AccessTime
+import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.Share
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -33,8 +37,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -67,6 +73,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun HomeScreen(
     onAdd: () -> Unit,
+    onEdit: (Long) -> Unit,
     onOpenSettings: () -> Unit,
     settings: AppSettings,
     viewModel: HomeViewModel,
@@ -91,6 +98,8 @@ fun HomeScreen(
         firstName = settings.firstName,
         onAdd = onAdd,
         onOpenSettings = onOpenSettings,
+        onEdit = onEdit,
+        onDelete = { id -> viewModel.deleteReminder(id) },
         onDone = { id ->
             confirm(id, R.string.spoken_dose_done)
             viewModel.markDone(id)
@@ -113,6 +122,8 @@ private fun HomeScreenContent(
     firstName: String,
     onAdd: () -> Unit,
     onOpenSettings: () -> Unit,
+    onEdit: (Long) -> Unit,
+    onDelete: (Long) -> Unit,
     onDone: (Long) -> Unit,
     onSnooze: (Long) -> Unit,
     modifier: Modifier = Modifier,
@@ -124,6 +135,7 @@ private fun HomeScreenContent(
     val current = state.current
     val missed = state.missed
     val upcoming = state.upcoming
+    var pendingDelete by remember { mutableStateOf<Remed?>(null) }
     val shareSummary = stringResource(
         R.string.share_pill_reminder_summary,
         state.totalCount,
@@ -234,7 +246,9 @@ private fun HomeScreenContent(
                         onSnooze = {
                             onSnooze(current.id)
                             scope.launch { snackbarHostState.showSnackbar(snoozedMessage) }
-                        }
+                        },
+                        onEdit = { onEdit(current.id) },
+                        onDelete = { pendingDelete = current },
                     )
                 }
 
@@ -245,7 +259,11 @@ private fun HomeScreenContent(
                     )
                     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         upcoming.forEach { remed ->
-                            UpcomingRemedCard(remed)
+                            UpcomingRemedCard(
+                                remed = remed,
+                                onEdit = { onEdit(remed.id) },
+                                onDelete = { pendingDelete = remed },
+                            )
                         }
                     }
                 }
@@ -260,6 +278,8 @@ private fun HomeScreenContent(
                             MissedRemedCard(
                                 remed = remed,
                                 onDone = { onDone(remed.id) },
+                                onEdit = { onEdit(remed.id) },
+                                onDelete = { pendingDelete = remed },
                             )
                         }
                     }
@@ -295,6 +315,17 @@ private fun HomeScreenContent(
             )
         }
     }
+
+    pendingDelete?.let { remed ->
+        DeleteReminderDialog(
+            name = remed.name,
+            onDismiss = { pendingDelete = null },
+            onConfirm = {
+                onDelete(remed.id)
+                pendingDelete = null
+            },
+        )
+    }
 }
 
 @Composable
@@ -323,7 +354,7 @@ private fun LoadingReminders(modifier: Modifier = Modifier) {
 private fun EmptyRemindersMessage(modifier: Modifier = Modifier) {
     Column(
         modifier = modifier,
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text(
             text = stringResource(R.string.no_pill_reminders_title),
@@ -356,6 +387,8 @@ private fun CurrentRemedCard(
     remed: Remed,
     onDone: () -> Unit,
     onSnooze: () -> Unit,
+    onEdit: () -> Unit,
+    onDelete: () -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -364,20 +397,27 @@ private fun CurrentRemedCard(
             .background(PillBuddyCard)
             .padding(16.dp)
     ) {
-        Text(
-            text = if (remed.dueNow) {
-                stringResource(R.string.due_now, remed.time)
-            } else {
-                stringResource(R.string.today_at, remed.time)
-            },
-            modifier = Modifier
-                .clip(RoundedCornerShape(50))
-                .background(PillBuddyMedium.copy(alpha = 0.38f))
-                .padding(horizontal = 10.dp, vertical = 4.dp),
-            color = PillBuddyDark,
-            style = MaterialTheme.typography.labelMedium,
-            fontWeight = FontWeight.Medium
-        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = if (remed.dueNow) {
+                    stringResource(R.string.due_now, remed.time)
+                } else {
+                    stringResource(R.string.today_at, remed.time)
+                },
+                modifier = Modifier
+                    .clip(RoundedCornerShape(50))
+                    .background(PillBuddyMedium.copy(alpha = 0.38f))
+                    .padding(horizontal = 10.dp, vertical = 4.dp),
+                color = PillBuddyDark,
+                style = MaterialTheme.typography.labelMedium,
+                fontWeight = FontWeight.Medium
+            )
+            Box(modifier = Modifier.weight(1f))
+            ReminderManageMenu(onEdit = onEdit, onDelete = onDelete)
+        }
         Text(
             text = remed.name,
             modifier = Modifier.padding(top = 14.dp),
@@ -411,6 +451,8 @@ private fun CurrentRemedCard(
 private fun MissedRemedCard(
     remed: Remed,
     onDone: () -> Unit,
+    onEdit: () -> Unit,
+    onDelete: () -> Unit,
 ) {
     Row(
         modifier = Modifier
@@ -457,17 +499,22 @@ private fun MissedRemedCard(
                 fontWeight = FontWeight.SemiBold
             )
         }
+        ReminderManageMenu(onEdit = onEdit, onDelete = onDelete)
     }
 }
 
 @Composable
-private fun UpcomingRemedCard(remed: Remed) {
+private fun UpcomingRemedCard(
+    remed: Remed,
+    onEdit: () -> Unit,
+    onDelete: () -> Unit,
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(20.dp))
             .background(PillBuddyCard)
-            .padding(horizontal = 14.dp, vertical = 14.dp),
+            .padding(start = 14.dp, end = 4.dp, top = 8.dp, bottom = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Box(
@@ -483,7 +530,11 @@ private fun UpcomingRemedCard(remed: Remed) {
                 modifier = Modifier.size(20.dp)
             )
         }
-        Column(modifier = Modifier.padding(start = 12.dp)) {
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .padding(start = 12.dp)
+        ) {
             Text(
                 text = remed.name,
                 style = MaterialTheme.typography.titleMedium,
@@ -496,7 +547,86 @@ private fun UpcomingRemedCard(remed: Remed) {
                 color = PillBuddyDarker
             )
         }
+        ReminderManageMenu(onEdit = onEdit, onDelete = onDelete)
     }
+}
+
+@Composable
+private fun ReminderManageMenu(
+    onEdit: () -> Unit,
+    onDelete: () -> Unit,
+) {
+    var expanded by remember { mutableStateOf(false) }
+    Box {
+        IconButton(onClick = { expanded = true }) {
+            Icon(
+                imageVector = Icons.Outlined.MoreVert,
+                contentDescription = stringResource(R.string.manage_reminder),
+                tint = PillBuddyDark,
+            )
+        }
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+        ) {
+            DropdownMenuItem(
+                text = { Text(stringResource(R.string.edit)) },
+                onClick = {
+                    expanded = false
+                    onEdit()
+                },
+            )
+            DropdownMenuItem(
+                text = { Text(stringResource(R.string.delete)) },
+                onClick = {
+                    expanded = false
+                    onDelete()
+                },
+            )
+        }
+    }
+}
+
+@Composable
+private fun DeleteReminderDialog(
+    name: String,
+    onDismiss: () -> Unit,
+    onConfirm: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        containerColor = PillBuddyCard,
+        title = {
+            Text(
+                text = stringResource(R.string.delete_reminder_title),
+                color = PillBuddyDark,
+                fontWeight = FontWeight.Bold,
+            )
+        },
+        text = {
+            Text(
+                text = stringResource(R.string.delete_reminder_body, name),
+                color = PillBuddyDarker,
+            )
+        },
+        confirmButton = {
+            TextButton(onClick = onConfirm) {
+                Text(
+                    text = stringResource(R.string.delete_reminder_confirm),
+                    color = PillBuddyDark,
+                    fontWeight = FontWeight.SemiBold,
+                )
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(
+                    text = stringResource(R.string.cancel),
+                    color = PillBuddyDarker,
+                )
+            }
+        },
+    )
 }
 
 @Preview(showBackground = true, widthDp = 390, heightDp = 844)
@@ -508,6 +638,8 @@ private fun HomePreview() {
             firstName = "Charles",
             onAdd = {},
             onOpenSettings = {},
+            onEdit = {},
+            onDelete = {},
             onDone = {},
             onSnooze = {},
         )

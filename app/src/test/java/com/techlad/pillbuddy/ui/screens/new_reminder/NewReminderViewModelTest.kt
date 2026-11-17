@@ -4,18 +4,13 @@ import com.techlad.pillbuddy.data.model.Frequency
 import com.techlad.pillbuddy.data.model.NewReminder
 import com.techlad.pillbuddy.data.model.Reminder
 import com.techlad.pillbuddy.data.repository.ReminderStore
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
-import kotlinx.coroutines.test.resetMain
-import kotlinx.coroutines.test.setMain
-import org.junit.After
+import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class NewReminderViewModelTest {
     private val store = FakeReminderStore()
     private val scheduler = FakeScheduler()
@@ -23,18 +18,12 @@ class NewReminderViewModelTest {
 
     @Before
     fun setUp() {
-        Dispatchers.setMain(UnconfinedTestDispatcher())
         viewModel = NewReminderViewModel(store, scheduler)
     }
 
-    @After
-    fun tearDown() {
-        Dispatchers.resetMain()
-    }
-
     @Test
-    fun createReminderStoresTheDraftAndSchedulesTheSavedRowImmediately() {
-        viewModel.createReminder(draft(name = "Vitamin D"))
+    fun createReminderStoresTheDraftAndSchedulesTheSavedRowImmediately() = runBlocking {
+        assertTrue(viewModel.createReminder(draft(name = "Vitamin D")))
 
         val saved = scheduler.scheduled.single()
         assertEquals(1L, saved.reminder.id)
@@ -49,21 +38,65 @@ class NewReminderViewModelTest {
     }
 
     @Test
-    fun eachCreateSchedulesItsOwnSavedReminder() {
-        viewModel.createReminder(draft(name = "First"))
-        viewModel.createReminder(draft(name = "Second"))
+    fun eachCreateSchedulesItsOwnSavedReminder() = runBlocking {
+        assertTrue(viewModel.createReminder(draft(name = "First")))
+        assertTrue(viewModel.createReminder(draft(name = "Second")))
 
         assertEquals(listOf("First", "Second"), scheduler.scheduled.map { it.reminder.name })
         assertEquals(listOf(1L, 2L), scheduler.scheduled.map { it.reminder.id })
     }
 
     @Test
-    fun doesNotScheduleWhenTheSavedReminderCannotBeRead() {
+    fun createStillSucceedsWhenTheSavedReminderCannotBeRead() = runBlocking {
         store.missingIds = setOf(1L)
 
-        viewModel.createReminder(draft(name = "Vitamin D"))
+        assertTrue(viewModel.createReminder(draft(name = "Vitamin D")))
 
         assertEquals(1, store.inserted.size)
+        assertTrue(scheduler.scheduled.isEmpty())
+    }
+
+    @Test
+    fun createReturnsFalseWhenInsertFails() = runBlocking {
+        store.failInsert = true
+
+        assertFalse(viewModel.createReminder(draft(name = "Vitamin D")))
+        assertTrue(store.inserted.isEmpty())
+        assertTrue(scheduler.scheduled.isEmpty())
+    }
+
+    @Test
+    fun updateReminderPersistsChangesCancelsAndReschedules() = runBlocking {
+        assertTrue(viewModel.createReminder(draft(name = "Vitamin D")))
+        scheduler.scheduled.clear()
+
+        assertTrue(
+            viewModel.updateReminder(
+                id = 1L,
+                draft = draft(name = "Vitamin D3").copy(
+                    hour = 12,
+                    minute = 0,
+                    notifyMinutesBefore = 30,
+                ),
+            ),
+        )
+
+        assertEquals(listOf(1L), scheduler.cancelled)
+        val updated = store.updated.single()
+        assertEquals("Vitamin D3", updated.name)
+        assertEquals(12, updated.hour)
+        assertEquals(0, updated.minute)
+        assertEquals(30, updated.notifyMinutesBefore)
+        assertEquals(updated, scheduler.scheduled.single().reminder)
+        assertTrue(scheduler.scheduled.single().fireImmediatelyIfLeadPassed)
+    }
+
+    @Test
+    fun updateReturnsFalseWhenReminderIsMissing() = runBlocking {
+        assertFalse(viewModel.updateReminder(id = 99L, draft = draft(name = "Gone")))
+
+        assertTrue(store.updated.isEmpty())
+        assertTrue(scheduler.cancelled.isEmpty())
         assertTrue(scheduler.scheduled.isEmpty())
     }
 
@@ -80,19 +113,17 @@ class NewReminderViewModelTest {
 
     private class FakeReminderStore : ReminderStore {
         val inserted = mutableListOf<Pair<Long, NewReminder>>()
+        val updated = mutableListOf<Reminder>()
         var missingIds = emptySet<Long>()
+        var failInsert = false
         private var nextId = 1L
+        private val byId = mutableMapOf<Long, Reminder>()
 
         override suspend fun insert(draft: NewReminder): Long {
+            if (failInsert) error("insert failed")
             val id = nextId++
             inserted += id to draft
-            return id
-        }
-
-        override suspend fun getById(id: Long): Reminder? {
-            if (id in missingIds) return null
-            val draft = inserted.first { it.first == id }.second
-            return Reminder(
+            byId[id] = Reminder(
                 id = id,
                 name = draft.name,
                 instructions = draft.instructions,
@@ -103,14 +134,34 @@ class NewReminderViewModelTest {
                 endEpochDay = draft.endEpochDay,
                 notifyMinutesBefore = draft.notifyMinutesBefore,
             )
+            return id
+        }
+
+        override suspend fun getById(id: Long): Reminder? {
+            if (id in missingIds) return null
+            return byId[id]
+        }
+
+        override suspend fun update(reminder: Reminder) {
+            updated += reminder
+            byId[reminder.id] = reminder
+        }
+
+        override suspend fun deleteById(id: Long) {
+            byId.remove(id)
         }
     }
 
     private class FakeScheduler : SavedReminderScheduler {
         val scheduled = mutableListOf<Scheduled>()
+        val cancelled = mutableListOf<Long>()
 
         override suspend fun schedule(reminder: Reminder, fireImmediatelyIfLeadPassed: Boolean) {
             scheduled += Scheduled(reminder, fireImmediatelyIfLeadPassed)
+        }
+
+        override fun cancel(reminderId: Long) {
+            cancelled += reminderId
         }
     }
 

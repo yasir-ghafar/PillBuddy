@@ -42,6 +42,22 @@ WHERE id = ?;
 lastInsertedId:
 SELECT last_insert_rowid();
 
+update:
+UPDATE reminder
+SET name = ?,
+    instructions = ?,
+    hour = ?,
+    minute = ?,
+    frequency = ?,
+    startEpochDay = ?,
+    endEpochDay = ?,
+    notifyMinutesBefore = ?
+WHERE id = ?;
+
+deleteById:
+DELETE FROM reminder
+WHERE id = ?;
+
 selectSeededSampleIds:
 SELECT id
 FROM reminder

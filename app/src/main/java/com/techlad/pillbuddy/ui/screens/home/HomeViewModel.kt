@@ -154,6 +154,13 @@ class HomeViewModel(
         }
     }
 
+    fun deleteReminder(id: Long) {
+        viewModelScope.launch {
+            doseAlarms.cancel(id)
+            reminders.deleteById(id)
+        }
+    }
+
     private companion object {
         const val CLOCK_TICK_MS = 30_000L
         const val MIN_LOADING_MS = 450L

@@ -35,11 +35,13 @@ class NewPillBuddyScreenTest {
     private val context = InstrumentationRegistry.getInstrumentation().targetContext
     private var created: NewReminder? = null
     private var backCount = 0
+    private var savedCount = 0
 
     @Before
     fun resetCallbacks() {
         created = null
         backCount = 0
+        savedCount = 0
     }
 
     @Test
@@ -66,15 +68,19 @@ class NewPillBuddyScreenTest {
     }
 
     @Test
-    fun saveIgnoresABlankName() {
+    fun saveShowsAnErrorForABlankName() {
         show()
 
         clickSave()
+        composeRule.onNodeWithText(text(R.string.name_required)).assertIsDisplayed()
+
         nameField().performTextReplacement("   ")
         instructionsField().performTextReplacement("Take with water")
         clickSave()
 
+        composeRule.onNodeWithText(text(R.string.name_required)).assertIsDisplayed()
         assertNull(composeRule.runOnIdle { created })
+        assertEquals(0, composeRule.runOnIdle { savedCount })
     }
 
     @Test
@@ -168,7 +174,11 @@ class NewPillBuddyScreenTest {
             PillBuddyTheme {
                 NewPillBuddyScreen(
                     onBack = { backCount += 1 },
-                    onCreate = { created = it },
+                    onSave = { draft ->
+                        created = draft
+                        true
+                    },
+                    onSaved = { savedCount += 1 },
                     defaults = defaults,
                 )
             }

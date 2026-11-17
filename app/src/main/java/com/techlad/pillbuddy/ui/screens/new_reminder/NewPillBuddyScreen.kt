@@ -5,6 +5,7 @@ package com.techlad.pillbuddy.ui.screens.new_reminder
 import androidx.compose.material3.ExperimentalMaterial3Api
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -30,6 +31,9 @@ import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -41,11 +45,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -53,6 +59,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -60,6 +67,7 @@ import androidx.compose.ui.window.Dialog
 import com.techlad.pillbuddy.R
 import com.techlad.pillbuddy.data.model.AppSettings
 import com.techlad.pillbuddy.data.model.NewReminder
+import com.techlad.pillbuddy.data.model.Reminder
 import com.techlad.pillbuddy.data.model.formatClock
 import com.techlad.pillbuddy.ui.components.PrimaryPillButton
 import com.techlad.pillbuddy.ui.theme.DisplayFont
@@ -69,43 +77,66 @@ import com.techlad.pillbuddy.ui.theme.PillBuddyDark
 import com.techlad.pillbuddy.ui.theme.PillBuddyDarker
 import com.techlad.pillbuddy.ui.theme.PillBuddyLighter
 import com.techlad.pillbuddy.ui.theme.PillBuddyOnPrimary
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 private enum class ActivePicker { None, Start, End, Time, Notification }
 
 private val FieldShape = RoundedCornerShape(16.dp)
+private val FieldErrorColor = Color(0xFFB42318)
+private const val SAVE_SUCCESS_VISIBLE_MS = 900L
 
 @Composable
 fun NewPillBuddyScreen(
     onBack: () -> Unit,
-    onCreate: (NewReminder) -> Unit,
+    onSave: suspend (NewReminder) -> Boolean,
+    onSaved: () -> Unit,
     defaults: AppSettings = AppSettings(),
+    initial: Reminder? = null,
     modifier: Modifier = Modifier,
 ) {
-    var name by rememberSaveable { mutableStateOf("") }
-    var instructions by rememberSaveable { mutableStateOf("") }
-    var every by rememberSaveable(defaults.defaultFrequency) {
-        mutableStateOf(defaults.defaultFrequency.toScheduleEvery())
+    val formKey = initial?.id ?: 0L
+    var name by rememberSaveable(formKey) { mutableStateOf(initial?.name.orEmpty()) }
+    var instructions by rememberSaveable(formKey) {
+        mutableStateOf(initial?.instructions.orEmpty())
     }
-    var startDate by remember { mutableStateOf(FormDate.today()) }
-    var endDate by remember { mutableStateOf(FormDate.today().plusYears(1)) }
-    var hour by rememberSaveable(defaults.defaultHour, defaults.defaultMinute) {
-        mutableIntStateOf(defaults.defaultHour)
+    var every by rememberSaveable(formKey, defaults.defaultFrequency) {
+        mutableStateOf(
+            initial?.frequency?.toScheduleEvery() ?: defaults.defaultFrequency.toScheduleEvery(),
+        )
     }
-    var minute by rememberSaveable(defaults.defaultHour, defaults.defaultMinute) {
-        mutableIntStateOf(defaults.defaultMinute)
+    var startDate by remember(formKey) {
+        mutableStateOf(initial?.formStartDate() ?: FormDate.today())
     }
-    var notifyMinutes by rememberSaveable(defaults.notifyMinutesBefore) {
-        mutableIntStateOf(defaults.notifyMinutesBefore)
+    var endDate by remember(formKey) {
+        mutableStateOf(initial?.formEndDate() ?: FormDate.today().plusYears(1))
     }
-    var picker by rememberSaveable { mutableStateOf(ActivePicker.None) }
+    var hour by rememberSaveable(formKey, defaults.defaultHour, defaults.defaultMinute) {
+        mutableIntStateOf(initial?.hour ?: defaults.defaultHour)
+    }
+    var minute by rememberSaveable(formKey, defaults.defaultHour, defaults.defaultMinute) {
+        mutableIntStateOf(initial?.minute ?: defaults.defaultMinute)
+    }
+    var notifyMinutes by rememberSaveable(formKey, defaults.notifyMinutesBefore) {
+        mutableIntStateOf(initial?.notifyMinutesBefore ?: defaults.notifyMinutesBefore)
+    }
+    var picker by rememberSaveable(formKey) { mutableStateOf(ActivePicker.None) }
+    var nameError by rememberSaveable(formKey) { mutableStateOf(false) }
+    var saving by remember(formKey) { mutableStateOf(false) }
+    var saveSucceeded by remember(formKey) { mutableStateOf(false) }
+    val isEditing = initial != null
+    val scope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val saveFailedMessage = stringResource(R.string.reminder_save_failed)
 
     val todayLabel = stringResource(R.string.today)
     val tomorrowLabel = stringResource(R.string.tomorrow)
     val repeats = upcomingRepeats(every, hour, minute, defaults.hourCycle, todayLabel, tomorrowLabel)
     val timeLabel = formatClock(hour, minute, defaults.hourCycle)
 
+    Box(modifier = modifier.fillMaxSize()) {
     Column(
-        modifier = modifier
+        modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 20.dp)
@@ -130,7 +161,9 @@ fun NewPillBuddyScreen(
                     .padding(8.dp),
             )
             Text(
-                text = stringResource(R.string.new_pill_reminder),
+                text = stringResource(
+                    if (isEditing) R.string.edit_pill_reminder else R.string.new_pill_reminder,
+                ),
                 modifier = Modifier.padding(start = 12.dp),
                 color = PillBuddyDark,
                 fontFamily = DisplayFont,
@@ -140,10 +173,13 @@ fun NewPillBuddyScreen(
         }
 
         FieldLabel(stringResource(R.string.name_label))
-        WhiteField {
+        WhiteField(hasError = nameError) {
             BasicTextField(
                 value = name,
-                onValueChange = { name = it },
+                onValueChange = {
+                    name = it
+                    if (nameError && it.trim().isNotEmpty()) nameError = false
+                },
                 singleLine = true,
                 textStyle = fieldTextStyle(),
                 cursorBrush = SolidColor(PillBuddyDark),
@@ -159,6 +195,14 @@ fun NewPillBuddyScreen(
                         innerTextField = innerTextField,
                     )
                 },
+            )
+        }
+        if (nameError) {
+            Text(
+                text = stringResource(R.string.name_required),
+                modifier = Modifier.padding(start = 4.dp, top = 6.dp),
+                color = FieldErrorColor,
+                fontSize = 13.sp,
             )
         }
 
@@ -277,6 +321,7 @@ fun NewPillBuddyScreen(
 
         PrimaryPillButton(
             text = stringResource(R.string.save_pill_reminder),
+            enabled = !saving,
             onClick = {
                 val draft = newReminderDraft(
                     name = name,
@@ -287,13 +332,55 @@ fun NewPillBuddyScreen(
                     hour = hour,
                     minute = minute,
                     notifyMinutesBefore = notifyMinutes,
-                ) ?: return@PrimaryPillButton
-                onCreate(draft)
+                )
+                if (draft == null) {
+                    nameError = true
+                    return@PrimaryPillButton
+                }
+                if (saving) return@PrimaryPillButton
+                saving = true
+                scope.launch {
+                    val saved = onSave(draft)
+                    if (saved) {
+                        saveSucceeded = true
+                        delay(SAVE_SUCCESS_VISIBLE_MS)
+                        onSaved()
+                    } else {
+                        saving = false
+                        snackbarHostState.showSnackbar(saveFailedMessage)
+                    }
+                }
             },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 20.dp)
         )
+        if (saveSucceeded) {
+            Text(
+                text = stringResource(R.string.reminder_saved),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp),
+                color = PillBuddyDarker,
+                fontSize = 14.sp,
+                textAlign = TextAlign.Center,
+            )
+        }
+    }
+
+    SnackbarHost(
+        hostState = snackbarHostState,
+        modifier = Modifier
+            .align(Alignment.BottomCenter)
+            .padding(16.dp),
+    ) { data ->
+        Snackbar(
+            snackbarData = data,
+            containerColor = PillBuddyDark,
+            contentColor = PillBuddyOnPrimary,
+            shape = RoundedCornerShape(16.dp),
+        )
+    }
     }
 
     when (picker) {
@@ -356,6 +443,7 @@ private fun FieldLabel(text: String, modifier: Modifier = Modifier) {
 private fun WhiteField(
     modifier: Modifier = Modifier,
     onClick: (() -> Unit)? = null,
+    hasError: Boolean = false,
     verticalPadding: androidx.compose.ui.unit.Dp = 16.dp,
     content: @Composable () -> Unit,
 ) {
@@ -369,6 +457,13 @@ private fun WhiteField(
             .fillMaxWidth()
             .clip(FieldShape)
             .background(PillBuddyCard)
+            .then(
+                if (hasError) {
+                    Modifier.border(1.5.dp, FieldErrorColor, FieldShape)
+                } else {
+                    Modifier
+                },
+            )
             .then(clickable)
             .padding(horizontal = 16.dp, vertical = verticalPadding)
     ) {
@@ -526,6 +621,10 @@ private val ScheduleEvery.labelRes: Int
 @Composable
 private fun NewPillBuddyPreview() {
     PillBuddyTheme {
-        NewPillBuddyScreen(onBack = {}, onCreate = {})
+        NewPillBuddyScreen(
+            onBack = {},
+            onSave = { true },
+            onSaved = {},
+        )
     }
 }

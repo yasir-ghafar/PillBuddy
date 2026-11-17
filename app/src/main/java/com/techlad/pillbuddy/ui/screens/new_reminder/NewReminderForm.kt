@@ -3,6 +3,7 @@ package com.techlad.pillbuddy.ui.screens.new_reminder
 import com.techlad.pillbuddy.data.model.EpochDays
 import com.techlad.pillbuddy.data.model.Frequency
 import com.techlad.pillbuddy.data.model.NewReminder
+import com.techlad.pillbuddy.data.model.Reminder
 import com.techlad.pillbuddy.data.model.formatClock
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -49,6 +50,26 @@ internal fun newReminderDraft(
     )
 }
 
+internal fun Reminder.withDraft(draft: NewReminder): Reminder {
+    return copy(
+        name = draft.name,
+        instructions = draft.instructions,
+        hour = draft.hour,
+        minute = draft.minute,
+        frequency = draft.frequency,
+        startEpochDay = draft.startEpochDay,
+        endEpochDay = draft.endEpochDay,
+        notifyMinutesBefore = draft.notifyMinutesBefore,
+    )
+}
+
+internal fun Reminder.formStartDate(): FormDate = FormDate.fromEpochDay(startEpochDay)
+
+internal fun Reminder.formEndDate(): FormDate {
+    val end = endEpochDay
+    return if (end != null) FormDate.fromEpochDay(end) else formStartDate().plusYears(1)
+}
+
 /** Returns the picked start date and an end date that is not before it. */
 internal fun applyStartDate(endDate: FormDate, picked: FormDate): Pair<FormDate, FormDate> {
     val end = if (endDate.toUtcMillis() < picked.toUtcMillis()) picked else endDate
@@ -90,6 +111,8 @@ internal data class FormDate(val year: Int, val month: Int, val day: Int) {
     }
 
     companion object {
+        private const val MILLIS_PER_DAY = 86_400_000L
+
         fun today(): FormDate {
             val local = Calendar.getInstance()
             return FormDate(
@@ -107,6 +130,10 @@ internal data class FormDate(val year: Int, val month: Int, val day: Int) {
                 utc.get(Calendar.MONTH),
                 utc.get(Calendar.DAY_OF_MONTH)
             )
+        }
+
+        fun fromEpochDay(epochDay: Long): FormDate {
+            return fromUtcMillis(epochDay * MILLIS_PER_DAY)
         }
     }
 }

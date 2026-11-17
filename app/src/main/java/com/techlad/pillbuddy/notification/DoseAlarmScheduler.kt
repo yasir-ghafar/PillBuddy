@@ -107,6 +107,7 @@ class DoseAlarmScheduler(
         cancelDose(reminderId)
         cancelSnooze(reminderId)
         DoseNotifications.cancel(context, reminderId)
+        alertedDays.edit().remove(reminderId.toString()).apply()
     }
 
     private fun cancelDose(reminderId: Long) {

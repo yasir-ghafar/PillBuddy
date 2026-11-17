@@ -8,7 +8,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -21,6 +23,7 @@ import com.techlad.pillbuddy.notification.DoseReminderPermissions
 import kotlinx.coroutines.launch
 import com.techlad.pillbuddy.data.AppContainer
 import com.techlad.pillbuddy.data.model.AppSettings
+import com.techlad.pillbuddy.data.model.Reminder
 import com.techlad.pillbuddy.ui.screens.home.HomeScreen
 import com.techlad.pillbuddy.ui.screens.home.HomeViewModel
 import com.techlad.pillbuddy.ui.screens.home.HomeViewModelFactory
@@ -34,6 +37,8 @@ import com.techlad.pillbuddy.ui.theme.PillBuddyBackground
 
 private enum class AppScreen { Onboarding, Home, NewPillBuddy, Settings, DoseHistory }
 
+private const val NO_EDITING_REMINDER = -1L
+
 @Composable
 fun PillBuddyApp(
     container: AppContainer,
@@ -41,6 +46,7 @@ fun PillBuddyApp(
 ) {
     var screen by rememberSaveable { mutableStateOf(AppScreen.Onboarding) }
     var bootstrapped by rememberSaveable { mutableStateOf(false) }
+    var editingReminderId by rememberSaveable { mutableLongStateOf(NO_EDITING_REMINDER) }
     val homeViewModel: HomeViewModel = viewModel(
         factory = HomeViewModelFactory(
             reminders = container.reminders,
@@ -83,7 +89,10 @@ fun PillBuddyApp(
     BackHandler(enabled = bootstrapped && screen != AppScreen.Onboarding && screen != AppScreen.Home) {
         screen = when (screen) {
             AppScreen.DoseHistory -> AppScreen.Settings
-            else -> AppScreen.Home
+            else -> {
+                editingReminderId = NO_EDITING_REMINDER
+                AppScreen.Home
+            }
         }
     }
 
@@ -110,7 +119,14 @@ fun PillBuddyApp(
             )
 
             AppScreen.Home -> HomeScreen(
-                onAdd = { screen = AppScreen.NewPillBuddy },
+                onAdd = {
+                    editingReminderId = NO_EDITING_REMINDER
+                    screen = AppScreen.NewPillBuddy
+                },
+                onEdit = { id ->
+                    editingReminderId = id
+                    screen = AppScreen.NewPillBuddy
+                },
                 onOpenSettings = { screen = AppScreen.Settings },
                 settings = settings,
                 viewModel = homeViewModel,
@@ -130,15 +146,49 @@ fun PillBuddyApp(
                 modifier = contentModifier,
             )
 
-            AppScreen.NewPillBuddy -> NewPillBuddyScreen(
-                onBack = { screen = AppScreen.Home },
-                defaults = settings,
-                onCreate = { draft ->
-                    newReminderViewModel.createReminder(draft)
-                    screen = AppScreen.Home
-                },
-                modifier = contentModifier
-            )
+            AppScreen.NewPillBuddy -> {
+                val editingId = editingReminderId
+                var initial by remember(editingId) { mutableStateOf<Reminder?>(null) }
+                var ready by remember(editingId) { mutableStateOf(editingId == NO_EDITING_REMINDER) }
+                LaunchedEffect(editingId) {
+                    if (editingId == NO_EDITING_REMINDER) {
+                        initial = null
+                        ready = true
+                    } else {
+                        val loaded = container.reminders.getById(editingId)
+                        if (loaded == null) {
+                            editingReminderId = NO_EDITING_REMINDER
+                            screen = AppScreen.Home
+                        } else {
+                            initial = loaded
+                            ready = true
+                        }
+                    }
+                }
+                if (ready) {
+                    NewPillBuddyScreen(
+                        onBack = {
+                            editingReminderId = NO_EDITING_REMINDER
+                            screen = AppScreen.Home
+                        },
+                        defaults = settings,
+                        initial = initial,
+                        onSave = { draft ->
+                            val id = editingReminderId
+                            if (id == NO_EDITING_REMINDER) {
+                                newReminderViewModel.createReminder(draft)
+                            } else {
+                                newReminderViewModel.updateReminder(id, draft)
+                            }
+                        },
+                        onSaved = {
+                            editingReminderId = NO_EDITING_REMINDER
+                            screen = AppScreen.Home
+                        },
+                        modifier = contentModifier,
+                    )
+                }
+            }
         }
     }
 }

@@ -74,7 +74,6 @@ data class AppSettings(
     val hourCycle: Int = 12,
     val notifyMinutesBefore: Int = 0,
     val snoozeMinutes: Int = SNOOZE_MINUTES,
-    val refillDaysBefore: Int = 0,
 )
 
 fun Reminder.occursOn(epochDay: Long): Boolean {

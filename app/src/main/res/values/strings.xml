@@ -87,6 +87,12 @@
     <string name="spoken_dose_snoozed">%1$s snoozed</string>
     <string name="dose_history">Dose history</string>
     <string name="view_dose_history">View dose history</string>
+    <string name="legal">Legal</string>
+    <string name="privacy_policy">Privacy policy</string>
+    <string name="disclaimer">Disclaimer</string>
+    <!-- Same privacy URL as Play Console once GitHub Pages (docs/) is enabled. -->
+    <string name="privacy_policy_url" translatable="false">https://yasir-ghafar.github.io/PillBuddy/privacy.html</string>
+    <string name="disclaimer_url" translatable="false">https://yasir-ghafar.github.io/PillBuddy/disclaimer.html</string>
     <string name="no_dose_history">Taken, snoozed, and missed doses show up here.</string>
     <string name="no_taken_dose_history">Doses you mark as taken show up here.</string>
     <string name="dose_status_taken">Taken</string>

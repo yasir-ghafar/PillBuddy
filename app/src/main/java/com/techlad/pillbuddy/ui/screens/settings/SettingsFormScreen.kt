@@ -44,6 +44,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -261,6 +262,10 @@ private fun SettingsContent(
     onSave: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val uriHandler = LocalUriHandler.current
+    val privacyPolicyUrl = stringResource(R.string.privacy_policy_url)
+    val disclaimerUrl = stringResource(R.string.disclaimer_url)
+
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -356,6 +361,22 @@ private fun SettingsContent(
             NavigationRow(
                 label = stringResource(R.string.view_dose_history),
                 onClick = onOpenDoseHistory,
+            )
+        }
+
+        SectionLabel(
+            text = stringResource(R.string.legal),
+            modifier = Modifier.padding(top = 8.dp),
+        )
+        SettingsCard {
+            NavigationRow(
+                label = stringResource(R.string.privacy_policy),
+                onClick = { uriHandler.openUri(privacyPolicyUrl) },
+            )
+            CardDivider()
+            NavigationRow(
+                label = stringResource(R.string.disclaimer),
+                onClick = { uriHandler.openUri(disclaimerUrl) },
             )
         }
 

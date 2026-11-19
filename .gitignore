@@ -13,3 +13,6 @@
 .externalNativeBuild
 .cxx
 local.properties
+.netlify
+/docs
+/play-store

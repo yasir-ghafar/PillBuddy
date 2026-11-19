@@ -14,5 +14,7 @@
 .cxx
 local.properties
 .netlify
-/docs
+/docs/disclaimer.html
+/docs/index.html
+/docs/privacy.html
 /play-store

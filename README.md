@@ -4,10 +4,13 @@ PillBuddy is an Android medication reminder app. Add your meds, get notified whe
 
 ## Screenshots
 
-| Onboarding | Home |
-| --- | --- |
-| ![Onboarding](docs/screenshots/00-onboarding.png) | ![Home](docs/screenshots/01-home.png) | ![New reminder](docs/screenshots/02-new-reminder.png) | ![Settings](docs/screenshots/03-settings.png) |
-| ![Dose history](docs/screenshots/04-dose-history.png) |
+<p>
+  <img src="docs/screenshots/00-onboarding.png" width="140" alt="Onboarding" />
+  <img src="docs/screenshots/01-home.png" width="140" alt="Home" />
+  <img src="docs/screenshots/02-new-reminder.png" width="140" alt="New reminder" />
+  <img src="docs/screenshots/03-settings.png" width="140" alt="Settings" />
+  <img src="docs/screenshots/04-dose-history.png" width="140" alt="Dose history" />
+</p>
 
 ## How it works
 
